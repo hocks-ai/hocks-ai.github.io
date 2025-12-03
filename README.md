@@ -1,2 +1,2 @@
 # hocks-ai.github.io
-Personal web project showcasing AI tools, experiments and futuristic UI design.
+HOCKS — Next-Gen AI Platform for creating AI chat, images, videos, apps, websites & code. Superfast, futuristic and powerful AI tools in one place
