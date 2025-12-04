@@ -4,61 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Signup - HOCKS AI</title>
-<style>
-    body {
-        background: #000;
-        font-family: Arial;
-        color: #0f0;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-    }
-    .box {
-        background: #0f0;
-        color: #000;
-        padding: 25px;
-        border-radius: 12px;
-        width: 300px;
-    }
-    input {
-        width: 100%;
-        padding: 10px;
-        margin: 8px 0;
-        border: none;
-        border-radius: 6px;
-    }
-    button {
-        width: 100%;
-        padding: 10px;
-        background: black;
-        color: #0f0;
-        border: 2px solid #0f0;
-        cursor: pointer;
-        border-radius: 6px;
-        margin-top: 10px;
-    }
-</style>
-</head>
-<body>
-
-<div class="box">
-    <h2>Create Account</h2>
-    <input type="email" id="signupEmail" placeholder="Email">
-    <input type="password" id="signupPassword" placeholder="Password">
-    <button onclick="signup()">Sign Up</button>
-
-    <p id="msg"></p>
-
-    <p style="margin-top: 10px;">
-        Already have an account? <a href="login.html">Login</a>
-    </p>
-</div>
-
 <script type="module">
+  // Firebase SDK
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-  import { getAuth, createUserWithEmailAndPassword } 
-    from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+  import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyC_-SRh3aovs5YWULB0qzhYKWLJvIH8FYs",
@@ -70,23 +19,105 @@
     measurementId: "G-PC95919LET"
   };
 
+  // Initialize Firebase
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
 
-  window.signup = function () {
-      const email = document.getElementById("signupEmail").value;
-      const password = document.getElementById("signupPassword").value;
+  window.signupUser = async function() {
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
+    const errorMsg = document.getElementById("errorMsg");
 
-      createUserWithEmailAndPassword(auth, email, password)
-      .then(() => {
-        document.getElementById("msg").innerText = "Account created!";
-        window.location.href = "login.html";
-      })
-      .catch((error) => {
-        document.getElementById("msg").innerText = error.message;
-      });
-  };
+    errorMsg.textContent = "";
+
+    if (!email || !password) {
+      errorMsg.textContent = "Email and password are required!";
+      return;
+    }
+
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+      // Redirect to homepage
+      window.location.href = "index.html";
+    } catch (error) {
+      console.error(error);
+      errorMsg.textContent = error.message;
+    }
+  }
 </script>
-
+<style>
+  body {
+    margin:0;
+    font-family: 'Segoe UI', sans-serif;
+    background: #0a0a0a;
+    color: #ffffff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  .signup-container {
+    background: rgba(20,20,20,0.8);
+    padding: 50px;
+    border-radius: 20px;
+    border: 2px solid #00ff9d;
+    box-shadow: 0 0 50px rgba(0,255,157,0.5);
+    text-align: center;
+    width: 350px;
+  }
+  h1 {
+    background: linear-gradient(135deg, #00ff9d, #00d4ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 32px;
+    margin-bottom: 30px;
+  }
+  input {
+    width: 100%;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 10px;
+    border: 2px solid rgba(0,255,157,0.3);
+    background: rgba(0,0,0,0.5);
+    color: #fff;
+    font-size: 16px;
+    outline: none;
+  }
+  input:focus {
+    border-color: #00ff9d;
+    box-shadow: 0 0 20px rgba(0,255,157,0.4);
+  }
+  button {
+    width: 100%;
+    padding: 15px;
+    margin-top: 20px;
+    border: none;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    background: linear-gradient(135deg, #00ff9d, #00d4ff);
+    color: #0a0a0a;
+    transition: all 0.3s ease;
+  }
+  button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(0,255,157,0.4);
+  }
+  #errorMsg {
+    color: #ff4d4d;
+    margin-top: 10px;
+    min-height: 20px;
+  }
+</style>
+</head>
+<body>
+  <div class="signup-container">
+    <h1>Sign Up</h1>
+    <input type="email" id="email" placeholder="Email" />
+    <input type="password" id="password" placeholder="Password" />
+    <button onclick="signupUser()">Sign Up</button>
+    <div id="errorMsg"></div>
+  </div>
 </body>
 </html>
