@@ -1,143 +1,123 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HOCKS - Login</title>
-  <script type="module">
-    // Firebase Initialization
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login - HOCKS AI</title>
+<script type="module">
+  // Firebase SDK
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyC_-SRh3aovs5YWULB0qzhYKWLJvIH8FYs",
-      authDomain: "hocks-ai-a377c.firebaseapp.com",
-      projectId: "hocks-ai-a377c",
-      storageBucket: "hocks-ai-a377c.firebasestorage.app",
-      messagingSenderId: "667039824852",
-      appId: "1:667039824852:web:7ca1bd8bdf02e97cbe3441",
-      measurementId: "G-PC95919LET"
-    };
+  const firebaseConfig = {
+    apiKey: "AIzaSyC_-SRh3aovs5YWULB0qzhYKWLJvIH8FYs",
+    authDomain: "hocks-ai-a377c.firebaseapp.com",
+    projectId: "hocks-ai-a377c",
+    storageBucket: "hocks-ai-a377c.firebasestorage.app",
+    messagingSenderId: "667039824852",
+    appId: "1:667039824852:web:7ca1bd8bdf02e97cbe3441",
+    measurementId: "G-PC95919LET"
+  };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
 
-    // Login function
-    window.loginUser = async () => {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      try {
-        await signInWithEmailAndPassword(auth, email, password);
-        alert("Login successful!");
-        window.location.href = "dashboard.html";
-      } catch (error) {
-        alert(error.message);
-      }
-    };
-  </script>
-  <style>
-    body {
-      margin: 0; padding: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
-      color: #fff;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      overflow: hidden;
+  window.loginUser = async function() {
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
+    const errorMsg = document.getElementById("errorMsg");
+
+    errorMsg.textContent = "";
+
+    if (!email || !password) {
+      errorMsg.textContent = "Email and password are required!";
+      return;
     }
 
-    .login-container {
-      background: rgba(10,10,10,0.95);
-      backdrop-filter: blur(20px);
-      border: 1px solid rgba(0,255,157,0.2);
-      border-radius: 20px;
-      padding: 50px;
-      width: 350px;
-      box-shadow: 0 0 50px rgba(0,255,157,0.5);
-      animation: glow 3s ease-in-out infinite;
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      // Redirect to homepage
+      window.location.href = "index.html";
+    } catch (error) {
+      console.error(error);
+      errorMsg.textContent = error.message;
     }
-
-    @keyframes glow {
-      0%,100% { box-shadow: 0 0 20px rgba(0,255,157,0.2); }
-      50% { box-shadow: 0 0 50px rgba(0,255,157,0.5); }
-    }
-
-    .login-container h2 {
-      text-align: center;
-      font-size: 32px;
-      font-weight: 700;
-      margin-bottom: 30px;
-      background: linear-gradient(135deg, #00ff9d 0%, #00d4ff 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .login-container input {
-      width: 100%;
-      padding: 15px 20px;
-      margin-bottom: 20px;
-      border-radius: 30px;
-      border: 2px solid rgba(0,255,157,0.3);
-      background: rgba(255,255,255,0.05);
-      color: #fff;
-      font-size: 16px;
-      outline: none;
-      transition: all 0.3s ease;
-    }
-
-    .login-container input:focus {
-      border-color: #00ff9d;
-      background: rgba(255,255,255,0.08);
-      box-shadow: 0 0 20px rgba(0,255,157,0.3);
-    }
-
-    .login-container button {
-      width: 100%;
-      padding: 15px;
-      border-radius: 30px;
-      border: none;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      background: linear-gradient(135deg, #00ff9d 0%, #00d4ff 100%);
-      color: #0a0a0a;
-      transition: all 0.3s ease;
-    }
-
-    .login-container button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 30px rgba(0,255,157,0.3);
-    }
-
-    .login-footer {
-      text-align: center;
-      margin-top: 20px;
-      font-size: 14px;
-      color: #b0b0b0;
-    }
-
-    .login-footer a {
-      color: #00ff9d;
-      text-decoration: none;
-      font-weight: 600;
-    }
-
-    .login-footer a:hover {
-      text-decoration: underline;
-    }
-  </style>
+  }
+</script>
+<style>
+  body {
+    margin:0;
+    font-family: 'Segoe UI', sans-serif;
+    background: #0a0a0a;
+    color: #ffffff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  .login-container {
+    background: rgba(20,20,20,0.8);
+    padding: 50px;
+    border-radius: 20px;
+    border: 2px solid #00ff9d;
+    box-shadow: 0 0 50px rgba(0,255,157,0.5);
+    text-align: center;
+    width: 350px;
+  }
+  h1 {
+    background: linear-gradient(135deg, #00ff9d, #00d4ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 32px;
+    margin-bottom: 30px;
+  }
+  input {
+    width: 100%;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 10px;
+    border: 2px solid rgba(0,255,157,0.3);
+    background: rgba(0,0,0,0.5);
+    color: #fff;
+    font-size: 16px;
+    outline: none;
+  }
+  input:focus {
+    border-color: #00ff9d;
+    box-shadow: 0 0 20px rgba(0,255,157,0.4);
+  }
+  button {
+    width: 100%;
+    padding: 15px;
+    margin-top: 20px;
+    border: none;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    background: linear-gradient(135deg, #00ff9d, #00d4ff);
+    color: #0a0a0a;
+    transition: all 0.3s ease;
+  }
+  button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(0,255,157,0.4);
+  }
+  #errorMsg {
+    color: #ff4d4d;
+    margin-top: 10px;
+    min-height: 20px;
+  }
+</style>
 </head>
 <body>
   <div class="login-container">
-    <h2>Login to HOCKS</h2>
-    <input type="email" id="email" placeholder="Email" required>
-    <input type="password" id="password" placeholder="Password" required>
+    <h1>Login</h1>
+    <input type="email" id="email" placeholder="Email" />
+    <input type="password" id="password" placeholder="Password" />
     <button onclick="loginUser()">Login</button>
-    <div class="login-footer">
-      Don't have an account? <a href="signup.html">Sign Up</a>
-    </div>
+    <div id="errorMsg"></div>
   </div>
 </body>
 </html>
