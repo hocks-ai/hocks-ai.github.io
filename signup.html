@@ -7,7 +7,8 @@
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js"></script>
+<!-- Firestore temporarily removed for testing -->
+<!-- <script src="https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js"></script> -->
 
 <script>
   // Firebase Configuration
@@ -24,7 +25,8 @@
   // Initialize Firebase
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
-  const db = firebase.firestore();
+  // Temporarily disable Firestore
+  // const db = firebase.firestore();
 
   // Check if user is already logged in
   auth.onAuthStateChanged((user) => {
@@ -34,7 +36,7 @@
     }
   });
 
-  // Signup Function
+  // Signup Function - SIMPLIFIED VERSION
   function signupUser() {
     const name = document.getElementById("name").value.trim();
     const email = document.getElementById("email").value.trim();
@@ -42,14 +44,12 @@
     const confirmPassword = document.getElementById("confirmPassword").value.trim();
     const errorMsg = document.getElementById("errorMsg");
     const signupBtn = document.getElementById("signupBtn");
-    const passwordStrength = document.getElementById("passwordStrength");
 
     errorMsg.textContent = "";
-    passwordStrength.textContent = "";
     signupBtn.disabled = true;
     signupBtn.innerHTML = '<span class="loading">Creating Account...</span>';
 
-    // Validation
+    // Basic Validation
     if (!name || !email || !password || !confirmPassword) {
       errorMsg.textContent = "All fields are required!";
       resetButton();
@@ -74,30 +74,15 @@
       return;
     }
 
-    // Check password strength
-    const strength = checkPasswordStrength(password);
-    if (strength.score < 2) {
-      errorMsg.textContent = "Password is too weak. Please use a stronger password.";
-      resetButton();
-      return;
-    }
-
-    // Firebase Authentication - Create User
+    // Create user with email and password ONLY
     auth.createUserWithEmailAndPassword(email, password)
       .then((userCredential) => {
         // User created successfully
         const user = userCredential.user;
         
-        // Create user profile in Firestore
-        return db.collection("users").doc(user.uid).set({
-          uid: user.uid,
-          name: name,
-          email: email,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-          plan: "free", // Default plan
-          credits: 50, // Initial credits
-          profileCompleted: false
+        // Update user profile with name
+        return user.updateProfile({
+          displayName: name
         });
       })
       .then(() => {
@@ -105,45 +90,23 @@
         return auth.currentUser.sendEmailVerification();
       })
       .then(() => {
-        // Success message
+        // Success - Show message
         errorMsg.style.color = "#00ff9d";
-        errorMsg.textContent = "Account created successfully! Please verify your email.";
+        errorMsg.textContent = "✓ Account created successfully! Redirecting...";
         
-        // Update button text
-        signupBtn.disabled = false;
-        signupBtn.innerHTML = '<i class="success-icon">✓</i> Account Created';
+        // Update button
+        signupBtn.innerHTML = '<span class="success-icon">✓</span> Account Created';
         signupBtn.style.background = "linear-gradient(135deg, #00ff9d, #00ff9d)";
         
-        // Redirect after 3 seconds
+        // Redirect after 2 seconds
         setTimeout(() => {
           window.location.href = "index.html";
-        }, 3000);
+        }, 2000);
       })
       .catch((error) => {
         // Handle errors
         resetButton();
-        
-        switch(error.code) {
-          case "auth/email-already-in-use":
-            errorMsg.textContent = "Email is already registered. Try logging in.";
-            break;
-          case "auth/invalid-email":
-            errorMsg.textContent = "Invalid email format.";
-            break;
-          case "auth/operation-not-allowed":
-            errorMsg.textContent = "Email/password accounts are not enabled.";
-            break;
-          case "auth/weak-password":
-            errorMsg.textContent = "Password is too weak. Use a stronger password.";
-            break;
-          case "auth/network-request-failed":
-            errorMsg.textContent = "Network error. Check your connection.";
-            break;
-          default:
-            errorMsg.textContent = error.message || "Signup failed. Please try again.";
-        }
-        
-        console.error("Signup error:", error);
+        handleSignupError(error);
       });
   }
 
@@ -152,6 +115,7 @@
     const signupBtn = document.getElementById("signupBtn");
     signupBtn.disabled = false;
     signupBtn.textContent = "Sign Up";
+    signupBtn.style.background = "linear-gradient(135deg, #00ff9d, #00d4ff)";
   }
 
   // Email validation function
@@ -160,91 +124,106 @@
     return re.test(email);
   }
 
-  // Password strength checker
+  // Error handling
+  function handleSignupError(error) {
+    const errorMsg = document.getElementById("errorMsg");
+    
+    console.error("Signup Error Details:", error);
+    
+    switch(error.code) {
+      case "auth/email-already-in-use":
+        errorMsg.textContent = "This email is already registered. Try logging in or use a different email.";
+        break;
+      case "auth/invalid-email":
+        errorMsg.textContent = "Invalid email format. Please enter a valid email address.";
+        break;
+      case "auth/operation-not-allowed":
+        errorMsg.textContent = "Email/password sign-up is not enabled. Please contact support.";
+        break;
+      case "auth/weak-password":
+        errorMsg.textContent = "Password is too weak. Please use at least 6 characters with a mix of letters and numbers.";
+        break;
+      case "auth/network-request-failed":
+        errorMsg.textContent = "Network error. Please check your internet connection and try again.";
+        break;
+      case "auth/too-many-requests":
+        errorMsg.textContent = "Too many failed attempts. Please try again later.";
+        break;
+      default:
+        errorMsg.textContent = "Signup failed: " + (error.message || "Unknown error occurred");
+    }
+  }
+
+  // Password strength checker (optional)
   function checkPasswordStrength(password) {
-    let score = 0;
-    const feedback = [];
-    
-    // Check length
-    if (password.length >= 8) score += 1;
-    if (password.length >= 12) score += 1;
-    
-    // Check for uppercase
-    if (/[A-Z]/.test(password)) score += 1;
-    
-    // Check for lowercase
-    if (/[a-z]/.test(password)) score += 1;
-    
-    // Check for numbers
-    if (/\d/.test(password)) score += 1;
-    
-    // Check for special characters
-    if (/[^A-Za-z0-9]/.test(password)) score += 1;
-    
-    // Determine strength level
-    let strength = "Weak";
-    let color = "#ff4d4d";
-    
-    if (score >= 4) {
-      strength = "Strong";
-      color = "#00ff9d";
-    } else if (score >= 2) {
-      strength = "Medium";
-      color = "#ffaa00";
-    }
-    
-    return { score, strength, color };
+    let strength = 0;
+    if (password.length >= 6) strength++;
+    if (password.length >= 8) strength++;
+    if (/[A-Z]/.test(password)) strength++;
+    if (/[0-9]/.test(password)) strength++;
+    if (/[^A-Za-z0-9]/.test(password)) strength++;
+    return strength;
   }
 
-  // Real-time password strength indicator
-  function updatePasswordStrength() {
-    const password = document.getElementById("password").value;
-    const passwordStrength = document.getElementById("passwordStrength");
+  // Real-time validation
+  document.addEventListener('DOMContentLoaded', function() {
+    // Password strength indicator
+    const passwordInput = document.getElementById("password");
+    const strengthDisplay = document.getElementById("passwordStrength");
     
-    if (password.length === 0) {
-      passwordStrength.textContent = "";
-      return;
+    if (passwordInput && strengthDisplay) {
+      passwordInput.addEventListener("input", function() {
+        const password = this.value;
+        if (password.length === 0) {
+          strengthDisplay.textContent = "";
+          return;
+        }
+        
+        const strength = checkPasswordStrength(password);
+        let message = "";
+        let color = "#ff4d4d";
+        
+        if (strength < 2) {
+          message = "Weak";
+          color = "#ff4d4d";
+        } else if (strength < 4) {
+          message = "Medium";
+          color = "#ffaa00";
+        } else {
+          message = "Strong";
+          color = "#00ff9d";
+        }
+        
+        strengthDisplay.textContent = "Strength: " + message;
+        strengthDisplay.style.color = color;
+      });
     }
     
-    const strength = checkPasswordStrength(password);
-    passwordStrength.textContent = `Strength: ${strength.strength}`;
-    passwordStrength.style.color = strength.color;
-    
-    // Update password strength indicator
-    const strengthBar = document.getElementById("strengthBar");
-    const width = Math.min((strength.score / 5) * 100, 100);
-    strengthBar.style.width = width + "%";
-    strengthBar.style.background = strength.color;
-  }
-
-  // Confirm password validation
-  function validateConfirmPassword() {
-    const password = document.getElementById("password").value;
-    const confirmPassword = document.getElementById("confirmPassword").value;
+    // Confirm password validation
+    const confirmInput = document.getElementById("confirmPassword");
     const confirmError = document.getElementById("confirmError");
     
-    if (confirmPassword.length === 0) {
-      confirmError.textContent = "";
-      return;
+    if (confirmInput && confirmError) {
+      confirmInput.addEventListener("input", function() {
+        const password = document.getElementById("password").value;
+        const confirm = this.value;
+        
+        if (confirm.length === 0) {
+          confirmError.textContent = "";
+          return;
+        }
+        
+        if (password !== confirm) {
+          confirmError.textContent = "Passwords do not match";
+          confirmError.style.color = "#ff4d4d";
+        } else {
+          confirmError.textContent = "✓ Passwords match";
+          confirmError.style.color = "#00ff9d";
+        }
+      });
     }
     
-    if (password !== confirmPassword) {
-      confirmError.textContent = "Passwords do not match";
-      confirmError.style.color = "#ff4d4d";
-    } else {
-      confirmError.textContent = "Passwords match";
-      confirmError.style.color = "#00ff9d";
-    }
-  }
-
-  // Enter key support
-  document.addEventListener('DOMContentLoaded', function() {
-    // Add event listeners for real-time validation
-    document.getElementById("password").addEventListener("input", updatePasswordStrength);
-    document.getElementById("password").addEventListener("input", validateConfirmPassword);
-    document.getElementById("confirmPassword").addEventListener("input", validateConfirmPassword);
-    
-    // Enter key support for all fields
+    // Enter key support
     const inputs = document.querySelectorAll('input');
     inputs.forEach(input => {
       input.addEventListener("keypress", function(event) {
@@ -255,7 +234,7 @@
       });
     });
     
-    // Focus on name field on page load
+    // Focus on name field
     document.getElementById("name").focus();
   });
 </script>
@@ -282,7 +261,7 @@
   }
 
   .signup-container {
-    background: rgba(20, 20, 20, 0.9);
+    background: rgba(20, 20, 20, 0.95);
     backdrop-filter: blur(10px);
     padding: 50px 40px;
     border-radius: 25px;
@@ -349,37 +328,28 @@
     background: rgba(0, 0, 0, 0.8);
   }
 
-  .password-strength {
-    margin-top: 10px;
-    height: 20px;
-  }
-
-  .strength-bar {
-    height: 4px;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 2px;
-    overflow: hidden;
-    margin-top: 5px;
-  }
-
-  .strength-bar-fill {
-    height: 100%;
-    width: 0%;
-    transition: width 0.3s ease, background 0.3s ease;
-    border-radius: 2px;
-  }
-
   .password-feedback {
     font-size: 12px;
     margin-top: 5px;
     height: 16px;
+    font-weight: 500;
   }
 
-  .confirm-feedback {
+  .terms {
+    margin-top: 20px;
     font-size: 12px;
-    margin-top: 5px;
-    height: 16px;
-    font-weight: 500;
+    color: rgba(255, 255, 255, 0.6);
+    text-align: center;
+    line-height: 1.5;
+  }
+
+  .terms a {
+    color: #00ff9d;
+    text-decoration: none;
+  }
+
+  .terms a:hover {
+    text-decoration: underline;
   }
 
   button {
@@ -396,6 +366,7 @@
     transition: all 0.3s ease;
     letter-spacing: 1px;
     text-transform: uppercase;
+    position: relative;
   }
 
   button:hover:not(:disabled) {
@@ -416,6 +387,8 @@
     border-radius: 50%;
     border-top-color: #0a0a0a;
     animation: spin 1s ease-in-out infinite;
+    margin-right: 10px;
+    vertical-align: middle;
   }
 
   @keyframes spin {
@@ -440,22 +413,7 @@
     font-size: 14px;
     font-weight: 500;
     transition: color 0.3s ease;
-  }
-
-  .terms {
-    margin-top: 20px;
-    font-size: 12px;
-    color: rgba(255, 255, 255, 0.6);
-    text-align: center;
-  }
-
-  .terms a {
-    color: #00ff9d;
-    text-decoration: none;
-  }
-
-  .terms a:hover {
-    text-decoration: underline;
+    line-height: 1.4;
   }
 
   .login-link {
@@ -472,6 +430,47 @@
 
   .login-link a:hover {
     text-decoration: underline;
+  }
+
+  /* Password requirements */
+  .password-requirements {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    padding: 15px;
+    margin-top: 10px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.7);
+    text-align: left;
+  }
+
+  .password-requirements ul {
+    list-style: none;
+    padding-left: 20px;
+  }
+
+  .password-requirements li {
+    margin-bottom: 5px;
+    position: relative;
+  }
+
+  .password-requirements li:before {
+    content: "•";
+    color: #00ff9d;
+    position: absolute;
+    left: -15px;
+  }
+
+  /* Debug info (for testing) */
+  .debug-info {
+    display: none;
+    background: rgba(255, 0, 0, 0.1);
+    border: 1px solid #ff0000;
+    border-radius: 10px;
+    padding: 10px;
+    margin-top: 20px;
+    font-size: 12px;
+    color: #ff4d4d;
+    text-align: left;
   }
 
   /* Responsive Design */
@@ -511,16 +510,18 @@
         id="name" 
         placeholder="Enter your full name"
         autocomplete="name"
+        required
       />
     </div>
     
     <div class="input-group">
-      <label for="email">Email</label>
+      <label for="email">Email Address</label>
       <input 
         type="email" 
         id="email" 
-        placeholder="Enter your email"
+        placeholder="you@example.com"
         autocomplete="email"
+        required
       />
     </div>
     
@@ -531,13 +532,9 @@
         id="password" 
         placeholder="Create a password (min. 6 characters)"
         autocomplete="new-password"
+        required
       />
-      <div class="password-strength">
-        <div class="strength-bar">
-          <div id="strengthBar" class="strength-bar-fill"></div>
-        </div>
-        <div id="passwordStrength" class="password-feedback"></div>
-      </div>
+      <div id="passwordStrength" class="password-feedback"></div>
     </div>
     
     <div class="input-group">
@@ -547,21 +544,55 @@
         id="confirmPassword" 
         placeholder="Confirm your password"
         autocomplete="new-password"
+        required
       />
-      <div id="confirmError" class="confirm-feedback"></div>
+      <div id="confirmError" class="password-feedback"></div>
+    </div>
+    
+    <div class="password-requirements">
+      <strong>Password Requirements:</strong>
+      <ul>
+        <li>At least 6 characters long</li>
+        <li>Include letters and numbers for stronger security</li>
+        <li>Avoid common passwords</li>
+      </ul>
     </div>
     
     <div class="terms">
-      By signing up, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+      By creating an account, you agree to our 
+      <a href="#" onclick="alert('Terms of Service will be displayed here')">Terms of Service</a> 
+      and 
+      <a href="#" onclick="alert('Privacy Policy will be displayed here')">Privacy Policy</a>.
     </div>
     
     <button id="signupBtn" onclick="signupUser()">Sign Up</button>
     
     <div id="errorMsg"></div>
     
+    <!-- Debug info (enable for testing) -->
+    <div id="debugInfo" class="debug-info"></div>
+    
     <div class="login-link">
-      Already have an account? <a href="login.html">Log in</a>
+      Already have an account? <a href="login.html">Log in here</a>
     </div>
   </div>
+
+  <script>
+    // Debug function to check Firebase status
+    function checkFirebaseStatus() {
+      const debugInfo = document.getElementById("debugInfo");
+      if (debugInfo) {
+        debugInfo.innerHTML = `
+          Firebase Initialized: ${firebase.apps.length > 0 ? '✓' : '✗'}<br>
+          Firebase Auth: ${typeof auth !== 'undefined' ? '✓' : '✗'}<br>
+          Current User: ${auth?.currentUser?.email || 'None'}<br>
+          Project ID: ${firebaseConfig.projectId || 'Not set'}
+        `;
+      }
+    }
+    
+    // Check Firebase status on load
+    setTimeout(checkFirebaseStatus, 1000);
+  </script>
 </body>
 </html>
