@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login - HOCKS AI</title>
+<style>
+    body {
+        background: #000;
+        font-family: Arial;
+        color: #0f0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+    .box {
+        background: #0f0;
+        color: #000;
+        padding: 25px;
+        border-radius: 12px;
+        width: 300px;
+    }
+    input {
+        width: 100%;
+        padding: 10px;
+        margin: 8px 0;
+        border: none;
+        border-radius: 6px;
+    }
+    button {
+        width: 100%;
+        padding: 10px;
+        background: black;
+        color: #0f0;
+        border: 2px solid #0f0;
+        cursor: pointer;
+        border-radius: 6px;
+        margin-top: 10px;
+    }
+</style>
+</head>
+<body>
+
+<div class="box">
+    <h2>Login</h2>
+    <input type="email" id="loginEmail" placeholder="Email">
+    <input type="password" id="loginPassword" placeholder="Password">
+    <button onclick="login()">Login</button>
+
+    <p id="msg"></p>
+
+    <p style="margin-top: 10px;">
+        No account? <a href="signup.html">Create one</a>
+    </p>
+</div>
+
+<!-- Firebase Auth Script -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword } 
+    from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyC_-SRh3aovs5YWULB0qzhYKWLJvIH8FYs",
+    authDomain: "hocks-ai-a377c.firebaseapp.com",
+    projectId: "hocks-ai-a377c",
+    storageBucket: "hocks-ai-a377c.firebasestorage.app",
+    messagingSenderId: "667039824852",
+    appId: "1:667039824852:web:7ca1bd8bdf02e97cbe3441",
+    measurementId: "G-PC95919LET"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  window.login = function () {
+      const email = document.getElementById("loginEmail").value;
+      const password = document.getElementById("loginPassword").value;
+
+      signInWithEmailAndPassword(auth, email, password)
+      .then(() => {
+        document.getElementById("msg").innerText = "Login successful!";
+        window.location.href = "dashboard.html"; // Redirect
+      })
+      .catch((error) => {
+        document.getElementById("msg").innerText = error.message;
+      });
+  };
+</script>
+
+</body>
+</html>
