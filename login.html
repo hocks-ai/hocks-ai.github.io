@@ -4,12 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Login - HOCKS AI</title>
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js"></script>
+<!-- Firebase SDK - SAME VERSION AS WORKING TEST -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 
 <script>
-  // Firebase Configuration
+  // Firebase Configuration - EXACT SAME AS WORKING TEST
   const firebaseConfig = {
     apiKey: "AIzaSyC_-SRh3aovs5YWULB0qzhYKWLJvIH8FYs",
     authDomain: "hocks-ai-a377c.firebaseapp.com",
@@ -21,111 +21,94 @@
   };
 
   // Initialize Firebase
-  firebase.initializeApp(firebaseConfig);
+  const app = firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
+  
+  console.log("Firebase Login initialized!");
 
   // Check if user is already logged in
   auth.onAuthStateChanged((user) => {
     if (user) {
-      // User is signed in, redirect to homepage
-      window.location.href = "index.html";
+      console.log("User already logged in:", user.email);
+      // Auto redirect to homepage
+      setTimeout(() => {
+        window.location.href = "index.html";
+      }, 1000);
     }
   });
 
-  // Login Function
   function loginUser() {
-    const email = document.getElementById("email").value.trim();
-    const password = document.getElementById("password").value.trim();
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
     const errorMsg = document.getElementById("errorMsg");
     const loginBtn = document.getElementById("loginBtn");
 
+    // Clear errors
     errorMsg.textContent = "";
-    loginBtn.disabled = true;
-    loginBtn.innerHTML = '<span class="loading">Logging in...</span>';
+    errorMsg.style.color = "#ff4d4d";
 
-    // Validation
+    // Simple validation
     if (!email || !password) {
       errorMsg.textContent = "Email and password are required!";
-      loginBtn.disabled = false;
-      loginBtn.textContent = "Login";
       return;
     }
 
-    if (!validateEmail(email)) {
-      errorMsg.textContent = "Please enter a valid email address!";
-      loginBtn.disabled = false;
-      loginBtn.textContent = "Login";
-      return;
-    }
+    // Show loading
+    loginBtn.disabled = true;
+    loginBtn.innerHTML = "Logging in...";
 
-    // Firebase Authentication
+    // Login with email and password
     auth.signInWithEmailAndPassword(email, password)
       .then((userCredential) => {
-        // Signed in successfully
-        const user = userCredential.user;
-        console.log("User logged in:", user.email);
+        // Success
+        console.log("User logged in:", userCredential.user.email);
         
-        // Redirect to homepage after successful login
+        // Success message
+        errorMsg.style.color = "#00ff9d";
+        errorMsg.textContent = "✓ Login successful! Redirecting...";
+        
+        loginBtn.innerHTML = "✓ Success!";
+        loginBtn.style.background = "#00ff9d";
+        
+        // Redirect to homepage
         setTimeout(() => {
           window.location.href = "index.html";
-        }, 500);
+        }, 1500);
       })
       .catch((error) => {
-        // Handle errors
+        // Error handling
         loginBtn.disabled = false;
-        loginBtn.textContent = "Login";
-        
-        switch(error.code) {
-          case "auth/invalid-email":
-            errorMsg.textContent = "Invalid email format.";
-            break;
-          case "auth/user-disabled":
-            errorMsg.textContent = "This account has been disabled.";
-            break;
-          case "auth/user-not-found":
-            errorMsg.textContent = "No account found with this email.";
-            break;
-          case "auth/wrong-password":
-            errorMsg.textContent = "Incorrect password.";
-            break;
-          case "auth/too-many-requests":
-            errorMsg.textContent = "Too many failed attempts. Try again later.";
-            break;
-          case "auth/network-request-failed":
-            errorMsg.textContent = "Network error. Check your connection.";
-            break;
-          default:
-            errorMsg.textContent = error.message || "Login failed. Please try again.";
-        }
+        loginBtn.innerHTML = "Login";
+        loginBtn.style.background = "";
         
         console.error("Login error:", error);
+        
+        // User-friendly error messages
+        let errorMessage = "Login failed. Please try again.";
+        
+        if (error.code === 'auth/user-not-found') {
+          errorMessage = "No account found with this email.";
+        } else if (error.code === 'auth/wrong-password') {
+          errorMessage = "Incorrect password.";
+        } else if (error.code === 'auth/invalid-email') {
+          errorMessage = "Invalid email format.";
+        } else if (error.code === 'auth/user-disabled') {
+          errorMessage = "This account has been disabled.";
+        } else if (error.code === 'auth/too-many-requests') {
+          errorMessage = "Too many failed attempts. Try again later.";
+        } else if (error.code === 'auth/network-request-failed') {
+          errorMessage = "Network error. Check your internet connection.";
+        } else {
+          errorMessage = "Error: " + error.message;
+        }
+        
+        errorMsg.textContent = errorMessage;
       });
   }
 
-  // Email validation function
-  function validateEmail(email) {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(email);
-  }
-
-  // Enter key support
-  document.addEventListener('DOMContentLoaded', function() {
-    const passwordField = document.getElementById("password");
-    
-    passwordField.addEventListener("keypress", function(event) {
-      if (event.key === "Enter") {
-        event.preventDefault();
-        loginUser();
-      }
-    });
-    
-    // Focus on email field on page load
-    document.getElementById("email").focus();
-  });
-
-  // Forgot password functionality (optional)
+  // Forgot password function
   function forgotPassword() {
-    const email = document.getElementById("email").value.trim();
+    const email = document.getElementById("email").value;
     const errorMsg = document.getElementById("errorMsg");
     
     if (!email) {
@@ -133,7 +116,9 @@
       return;
     }
     
-    if (!validateEmail(email)) {
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
       errorMsg.textContent = "Please enter a valid email address.";
       return;
     }
@@ -144,9 +129,23 @@
         errorMsg.textContent = "Password reset email sent! Check your inbox.";
       })
       .catch((error) => {
-        errorMsg.textContent = error.message;
+        errorMsg.textContent = "Error: " + error.message;
       });
   }
+
+  // Enter key support
+  document.addEventListener('DOMContentLoaded', function() {
+    // Enter key triggers login
+    document.getElementById("password").addEventListener("keypress", function(e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        loginUser();
+      }
+    });
+    
+    // Focus on email field
+    document.getElementById("email").focus();
+  });
 </script>
 
 <style>
@@ -171,7 +170,7 @@
   }
 
   .login-container {
-    background: rgba(20, 20, 20, 0.9);
+    background: rgba(20, 20, 20, 0.95);
     backdrop-filter: blur(10px);
     padding: 50px 40px;
     border-radius: 25px;
@@ -181,7 +180,7 @@
       0 0 100px rgba(0, 255, 157, 0.1);
     text-align: center;
     width: 100%;
-    max-width: 400px;
+    max-width: 450px;
     animation: fadeIn 0.5s ease-out;
   }
 
@@ -262,20 +261,6 @@
   button:disabled {
     opacity: 0.7;
     cursor: not-allowed;
-  }
-
-  .loading {
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    border: 3px solid rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
-    border-top-color: #0a0a0a;
-    animation: spin 1s ease-in-out infinite;
-  }
-
-  @keyframes spin {
-    to { transform: rotate(360deg); }
   }
 
   #errorMsg {
@@ -374,8 +359,26 @@
     <div id="errorMsg"></div>
     
     <div class="register-link">
-      Don't have an account? <a href="register.html">Sign up</a>
+      Don't have an account? <a href="signup.html">Sign up</a>
     </div>
   </div>
+
+  <!-- Debug script -->
+  <script>
+    // Log Firebase status
+    console.log("Firebase Login Config:", firebaseConfig);
+    console.log("Firebase App:", app.name);
+    console.log("Firebase Auth:", auth);
+    
+    // Test current user
+    setTimeout(() => {
+      const user = auth.currentUser;
+      if (user) {
+        console.log("Current user:", user.email);
+      } else {
+        console.log("No user logged in");
+      }
+    }, 1000);
+  </script>
 </body>
 </html>
