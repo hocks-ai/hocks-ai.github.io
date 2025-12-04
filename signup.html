@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Signup - HOCKS AI</title>
+<style>
+    body {
+        background: #000;
+        font-family: Arial;
+        color: #0f0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+    .box {
+        background: #0f0;
+        color: #000;
+        padding: 25px;
+        border-radius: 12px;
+        width: 300px;
+    }
+    input {
+        width: 100%;
+        padding: 10px;
+        margin: 8px 0;
+        border: none;
+        border-radius: 6px;
+    }
+    button {
+        width: 100%;
+        padding: 10px;
+        background: black;
+        color: #0f0;
+        border: 2px solid #0f0;
+        cursor: pointer;
+        border-radius: 6px;
+        margin-top: 10px;
+    }
+</style>
+</head>
+<body>
+
+<div class="box">
+    <h2>Create Account</h2>
+    <input type="email" id="signupEmail" placeholder="Email">
+    <input type="password" id="signupPassword" placeholder="Password">
+    <button onclick="signup()">Sign Up</button>
+
+    <p id="msg"></p>
+
+    <p style="margin-top: 10px;">
+        Already have an account? <a href="login.html">Login</a>
+    </p>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword } 
+    from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyC_-SRh3aovs5YWULB0qzhYKWLJvIH8FYs",
+    authDomain: "hocks-ai-a377c.firebaseapp.com",
+    projectId: "hocks-ai-a377c",
+    storageBucket: "hocks-ai-a377c.firebasestorage.app",
+    messagingSenderId: "667039824852",
+    appId: "1:667039824852:web:7ca1bd8bdf02e97cbe3441",
+    measurementId: "G-PC95919LET"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  window.signup = function () {
+      const email = document.getElementById("signupEmail").value;
+      const password = document.getElementById("signupPassword").value;
+
+      createUserWithEmailAndPassword(auth, email, password)
+      .then(() => {
+        document.getElementById("msg").innerText = "Account created!";
+        window.location.href = "login.html";
+      })
+      .catch((error) => {
+        document.getElementById("msg").innerText = error.message;
+      });
+  };
+</script>
+
+</body>
+</html>
