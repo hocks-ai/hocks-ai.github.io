@@ -1,147 +1,99 @@
 <!doctype html>
 <html lang="en">
- <head>
+<head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HOCKS - AI Platform</title>
   <script src="/_sdk/element_sdk.js"></script>
+  <script src="/_sdk/data_sdk.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* --- মূল Canva 3D/interactive CSS (যেমন ছিল) --- */
-    * {margin:0; padding:0; box-sizing:border-box;}
-    body {font-family:-apple-system, BlinkMacSystemFont,'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-      background:#0a0a0a; color:#fff; overflow-x:hidden; width:100%; height:100%;}
-    html {height:100%; width:100%;}
-    .main-container{width:100%; min-height:100%; position:relative;}
-    .gradient-bg{position:fixed; top:0; left:0; width:100%; height:100%; z-index:0;
-      background:linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);}
-    .gradient-bg::before{content:''; position:absolute; width:200%; height:200%; top:-50%; left:-50%;
-      background:radial-gradient(circle, rgba(0,255,157,0.15) 0%, transparent 50%);
-      animation: rotate 20s linear infinite;}
-    @keyframes rotate{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
-    /* Navigation Header */
-    .nav-header{position:fixed; top:0; left:0; right:0; height:70px; background:rgba(10,10,10,0.8);
-      backdrop-filter:blur(10px); border-bottom:1px solid rgba(0,255,157,0.2);
-      display:flex; align-items:center; justify-content:space-between; padding:0 30px; z-index:1000;}
-    .menu-icon{cursor:pointer; display:flex; flex-direction:column; gap:6px; padding:10px; transition:all 0.3s ease;}
-    .menu-line{width:25px; height:3px; background:#00ff9d; border-radius:2px; transition:all 0.3s ease;}
-    .website-title{font-size:32px; font-weight:700; background:linear-gradient(135deg,#00ff9d 0%,#00d4ff 100%);
-      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; letter-spacing:2px;}
-    /* Top-right auth buttons */
-    .auth-buttons{display:flex; gap:15px;}
-    .btn-login,.btn-signup,.btn-logout{
-      padding:10px 25px; border-radius:25px; border:none; font-size:14px; font-weight:600; cursor:pointer;
-      transition:all 0.3s ease;
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body, html { width:100%; height:100%; font-family:'Segoe UI', Roboto, sans-serif; background:#0a0a0a; color:#fff; overflow-x:hidden; }
+    a { text-decoration:none; }
+    button { outline:none; cursor:pointer; }
+
+    .gradient-bg {
+      position: fixed; top:0; left:0; width:100%; height:100%;
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
+      z-index:0;
     }
-    .btn-login{background:transparent; color:#00ff9d; border:2px solid #00ff9d;}
-    .btn-login:hover{background:rgba(0,255,157,0.1); transform:translateY(-2px);}
-    .btn-signup{background:linear-gradient(135deg,#00ff9d 0%,#00d4ff 100%); color:#0a0a0a;}
-    .btn-signup:hover{transform:translateY(-2px); box-shadow:0 10px 30px rgba(0,255,157,0.3);}
-    .btn-logout{background:#ff4b4b; color:#fff;}
-    .btn-logout:hover{transform:translateY(-2px); box-shadow:0 10px 30px rgba(255,75,75,0.3);}
-    /* Side Menu, Hero, Features, Chat Window, etc. মূল Canva code 그대로 থাকবে */
-    /* --- এখানে মূল Canva CSS এর বাকি অংশ থাকবে --- */
+
+    /* Header */
+    .nav-header {
+      position: fixed; top:0; left:0; right:0; height:70px;
+      background: rgba(10,10,10,0.8); backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(0,255,157,0.2); display:flex; justify-content:space-between; align-items:center; padding:0 20px; z-index:1000;
+    }
+    .website-title { font-size:28px; font-weight:800; background: linear-gradient(135deg,#00ff9d,#00d4ff); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .menu-icon { cursor:pointer; flex-direction:column; display:flex; gap:5px; }
+    .menu-line { width:25px; height:3px; background:#00ff9d; border-radius:2px; }
+
+    .btn-login, .btn-signup { padding:8px 20px; border-radius:25px; border:none; font-weight:600; transition:all 0.3s; }
+    .btn-login { border:2px solid #00ff9d; background:transparent; color:#00ff9d; }
+    .btn-login:hover { background: rgba(0,255,157,0.1); transform:translateY(-2px); }
+    .btn-signup { background: linear-gradient(135deg,#00ff9d,#00d4ff); color:#0a0a0a; }
+    .btn-signup:hover { transform:translateY(-2px); box-shadow:0 10px 30px rgba(0,255,157,0.3); }
+
+    /* Side Menu */
+    .side-menu { position: fixed; top:70px; left:-300px; width:280px; height:calc(100%-70px); background: rgba(10,10,10,0.95); backdrop-filter: blur(20px); border-right:1px solid rgba(0,255,157,0.2); padding:30px 20px; z-index:999; transition:left 0.4s ease; overflow-y:auto; }
+    .side-menu.open { left:0; }
+    .menu-title { font-size:18px; font-weight:600; color:#00ff9d; margin-bottom:20px; }
+    .menu-item { padding:12px 15px; margin-bottom:10px; background: rgba(255,255,255,0.05); border-radius:10px; cursor:pointer; border-left:3px solid transparent; transition:all 0.3s; }
+    .menu-item:hover { background: rgba(0,255,157,0.1); border-left-color:#00ff9d; transform:translateX(5px); }
+
+    /* Hero */
+    .hero-section { text-align:center; padding:60px 20px; max-width:1200px; margin:0 auto; z-index:1; position:relative; }
+    .hero-title { font-size:56px; font-weight:800; line-height:1.2; background: linear-gradient(135deg,#fff,#00ff9d); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:20px; }
+    .hero-subtitle { font-size:20px; color:#b0b0b0; margin-bottom:50px; max-width:600px; margin-left:auto; margin-right:auto; }
+
+    /* Rotating Features */
+    .feature-showcase { position:relative; height:100px; margin:50px auto; display:flex; align-items:center; justify-content:center; }
+    .feature-text { font-size:40px; font-weight:700; color:#00ff9d; position:absolute; opacity:0; transform:translateY(20px); animation: fadeInOut 15s infinite; text-shadow:0 0 20px rgba(0,255,157,0.5); }
+    .feature-text:nth-child(1){ animation-delay:0s; }
+    .feature-text:nth-child(2){ animation-delay:3s; }
+    .feature-text:nth-child(3){ animation-delay:6s; }
+    .feature-text:nth-child(4){ animation-delay:9s; }
+    .feature-text:nth-child(5){ animation-delay:12s; }
+    @keyframes fadeInOut { 0%,100%{opacity:0; transform:translateY(20px);} 5%,15%{opacity:1; transform:translateY(0);} 20%{opacity:0; transform:translateY(-20px);} }
+
+    /* Chat Window */
+    .chat-window { width:90%; max-width:700px; margin:50px auto; background:rgba(20,20,20,0.8); backdrop-filter:blur(20px); border-radius:20px; border:1px solid rgba(0,255,157,0.3); padding:20px; box-shadow:0 20px 60px rgba(0,255,157,0.2); display:flex; flex-direction:column; gap:15px; }
+    .chat-input-container { display:flex; gap:10px; align-items:center; }
+    .chat-input { flex:1; padding:15px 20px; border-radius:30px; border:2px solid rgba(0,255,157,0.3); background:rgba(255,255,255,0.05); color:#fff; font-size:16px; transition:all 0.3s; }
+    .chat-input:focus { border-color:#00ff9d; background:rgba(255,255,255,0.08); box-shadow:0 0 20px rgba(0,255,157,0.2); }
+    .chat-input::placeholder { color:#666; }
+    .send-btn { width:50px; height:50px; border-radius:50%; background:linear-gradient(135deg,#00ff9d,#00d4ff); display:flex; align-items:center; justify-content:center; cursor:pointer; border:none; transition:all 0.3s; }
+    .send-btn:hover { transform:scale(1.1); box-shadow:0 10px 30px rgba(0,255,157,0.4); }
+    .send-btn svg { width:22px; height:22px; fill:#0a0a0a; }
+
+    /* Features Grid */
+    .features-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:20px; margin-top:60px; padding:0 20px; }
+    .feature-card { background:rgba(20,20,20,0.6); backdrop-filter:blur(10px); border-radius:15px; padding:25px; cursor:pointer; transition:all 0.4s; border:1px solid rgba(0,255,157,0.2); position:relative; }
+    .feature-card:hover { transform:translateY(-8px); border-color:#00ff9d; box-shadow:0 20px 50px rgba(0,255,157,0.3); }
+
+    /* Footer */
+    .developer-footer { margin-top:80px; padding:30px 20px; text-align:center; border-top:1px solid rgba(0,255,157,0.2); }
+    .developer-text { color:#b0b0b0; }
+    .developer-name { color:#00ff9d; font-weight:600; }
+
+    /* Coming Soon */
+    .coming-soon-page { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(10,10,10,0.98); z-index:2000; align-items:center; justify-content:center; flex-direction:column; padding:20px; }
+    .coming-soon-page.active { display:flex; }
+    .coming-soon-title { font-size:64px; font-weight:800; background:linear-gradient(135deg,#00ff9d,#00d4ff); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:20px; text-align:center; }
+    .coming-soon-message { font-size:22px; color:#b0b0b0; text-align:center; margin-bottom:40px; }
+    .back-btn { padding:12px 35px; border-radius:30px; border:2px solid #00ff9d; color:#00ff9d; font-weight:600; cursor:pointer; background:transparent; transition:all 0.3s; }
+    .back-btn:hover { background:rgba(0,255,157,0.1); transform:scale(1.05); }
+
+    /* Responsive */
+    @media(max-width:768px){ .hero-title{font-size:42px;} .feature-text{font-size:28px;} .website-title{font-size:24px;} .features-grid{grid-template-columns:1fr;} }
   </style>
-  <script type="module">
-    // Firebase SDK import
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
-
-    // Firebase configuration (তোমার code memory থেকে)
-    const firebaseConfig = {
-      apiKey: "AIzaSyC_-SRh3aovs5YWULB0qzhYKWLJvIH8FYs",
-      authDomain: "hocks-ai-a377c.firebaseapp.com",
-      projectId: "hocks-ai-a377c",
-      storageBucket: "hocks-ai-a377c.firebasestorage.app",
-      messagingSenderId: "667039824852",
-      appId: "1:667039824852:web:7ca1bd8bdf02e97cbe3441",
-      measurementId: "G-PC95919LET"
-    };
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-
-    // DOM elements
-    const loginBtn = document.querySelector('.btn-login');
-    const signupBtn = document.querySelector('.btn-signup');
-    const authContainer = document.querySelector('.auth-buttons');
-
-    // Create login/signup forms dynamically
-    function createAuthForm(type){
-      const formContainer = document.createElement('div');
-      formContainer.style.position = 'fixed';
-      formContainer.style.top = '50%';
-      formContainer.style.left = '50%';
-      formContainer.style.transform = 'translate(-50%, -50%)';
-      formContainer.style.background = 'rgba(20,20,20,0.95)';
-      formContainer.style.backdropFilter = 'blur(20px)';
-      formContainer.style.padding = '40px';
-      formContainer.style.borderRadius = '20px';
-      formContainer.style.border = '1px solid rgba(0,255,157,0.3)';
-      formContainer.style.zIndex = '2000';
-      formContainer.id = 'authForm';
-
-      formContainer.innerHTML = `
-        <h2 style="color:#00ff9d; margin-bottom:20px; text-align:center;">${type === 'login' ? 'Login' : 'Sign Up'}</h2>
-        <input type="email" id="authEmail" placeholder="Email" style="width:100%; padding:15px; margin-bottom:15px; border-radius:10px; border:1px solid #00ff9d; background:#0a0a0a; color:#fff;">
-        <input type="password" id="authPass" placeholder="Password" style="width:100%; padding:15px; margin-bottom:15px; border-radius:10px; border:1px solid #00ff9d; background:#0a0a0a; color:#fff;">
-        <button id="submitAuth" style="width:100%; padding:15px; border:none; border-radius:25px; background:#00ff9d; color:#0a0a0a; font-weight:600; cursor:pointer;">${type === 'login' ? 'Login' : 'Sign Up'}</button>
-        <button id="closeAuth" style="width:100%; padding:15px; margin-top:10px; border:none; border-radius:25px; background:#ff4b4b; color:#fff; font-weight:600; cursor:pointer;">Cancel</button>
-      `;
-      document.body.appendChild(formContainer);
-
-      document.getElementById('closeAuth').onclick = ()=>{ formContainer.remove(); };
-
-      document.getElementById('submitAuth').onclick = ()=>{
-        const email = document.getElementById('authEmail').value;
-        const pass = document.getElementById('authPass').value;
-        if(type==='signup'){
-          createUserWithEmailAndPassword(auth,email,pass)
-          .then(userCredential=>{
-            alert('Sign Up Successful!');
-            formContainer.remove();
-          })
-          .catch(err=>alert(err.message));
-        }else{
-          signInWithEmailAndPassword(auth,email,pass)
-          .then(userCredential=>{
-            alert('Login Successful!');
-            formContainer.remove();
-          })
-          .catch(err=>alert(err.message));
-        }
-      };
-    }
-
-    loginBtn.addEventListener('click', ()=>{ createAuthForm('login'); });
-    signupBtn.addEventListener('click', ()=>{ createAuthForm('signup'); });
-
-    // Auth state change: show login/signup or logout
-    onAuthStateChanged(auth, user=>{
-      authContainer.innerHTML = '';
-      if(user){
-        const logoutBtn = document.createElement('button');
-        logoutBtn.className = 'btn-logout';
-        logoutBtn.textContent = 'Logout';
-        logoutBtn.onclick = ()=>{ signOut(auth); };
-        authContainer.appendChild(logoutBtn);
-      }else{
-        const lBtn = document.createElement('button');
-        lBtn.className = 'btn-login';
-        lBtn.textContent = 'Login';
-        lBtn.onclick = ()=>{ createAuthForm('login'); };
-        const sBtn = document.createElement('button');
-        sBtn.className = 'btn-signup';
-        sBtn.textContent = 'Sign Up';
-        sBtn.onclick = ()=>{ createAuthForm('signup'); };
-        authContainer.appendChild(lBtn);
-        authContainer.appendChild(sBtn);
-      }
-    });
-  </script>
- </head>
- <body>
+</head>
+<body>
   <div class="main-container">
     <div class="gradient-bg"></div>
-    <!-- Navigation Header -->
+
+    <!-- Header -->
     <header class="nav-header">
       <div class="menu-icon" id="menuIcon">
         <div class="menu-line"></div>
@@ -149,15 +101,122 @@
         <div class="menu-line"></div>
       </div>
       <h1 class="website-title" id="websiteTitle">HOCKS</h1>
-      <div class="auth-buttons">
+      <div class="flex gap-3">
         <button class="btn-login">Login</button>
         <button class="btn-signup">Sign Up</button>
       </div>
     </header>
-    <!-- এখানে Canva মূল 3D interactive content থাকবে -->
+
+    <!-- Side Menu -->
+    <nav class="side-menu" id="sideMenu">
+      <div class="menu-title">Features</div>
+      <div class="menu-item" data-feature="chat">💬 Chat with AI</div>
+      <div class="menu-item" data-feature="picture">🖼️ Create Picture</div>
+      <div class="menu-item" data-feature="video">🎥 Create Video</div>
+      <div class="menu-item" data-feature="app">📱 Create App</div>
+      <div class="menu-item" data-feature="website">🌐 Create Website</div>
+      <div class="menu-item" data-feature="code">💻 Code Generator</div>
+      <div class="menu-item" data-feature="music">🎵 Music Creator</div>
+    </nav>
+
+    <!-- Main Content -->
     <main class="content" id="mainContent">
-      <!-- Hero, Features, Chat Window, etc. -->
+      <section class="hero-section">
+        <h2 class="hero-title" id="heroTitle">Next Generation AI Platform</h2>
+        <p class="hero-subtitle" id="tagline">Create anything with the power of artificial intelligence</p>
+
+        <!-- Rotating Feature -->
+        <div class="feature-showcase">
+          <div class="feature-text">Chat with AI</div>
+          <div class="feature-text">Create Picture</div>
+          <div class="feature-text">Create Video</div>
+          <div class="feature-text">Create App</div>
+          <div class="feature-text">Create Website</div>
+        </div>
+
+        <!-- Chat Window -->
+        <div class="chat-window">
+          <div class="chat-input-container">
+            <input type="text" class="chat-input" placeholder="Ask me anything or describe what you want to create..." id="chatInput">
+            <button class="send-btn" id="sendBtn">
+              <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Features Grid -->
+        <div class="features-grid">
+          <div class="feature-card" data-feature="chat"><div class="feature-icon">💬</div><h3 class="feature-title">AI Chat</h3><p class="feature-description">Intelligent conversations powered by advanced AI models</p></div>
+          <div class="feature-card" data-feature="picture"><div class="feature-icon">🎨</div><h3 class="feature-title">Image Generation</h3><p class="feature-description">Create stunning images from text descriptions</p></div>
+          <div class="feature-card" data-feature="video"><div class="feature-icon">🎬</div><h3 class="feature-title">Video Creation</h3><p class="feature-description">Generate and edit high-quality videos with AI</p></div>
+          <div class="feature-card" data-feature="website"><div class="feature-icon">🌐</div><h3 class="feature-title">Website Builder</h3><p class="feature-description">Build complete websites from simple prompts</p></div>
+        </div>
+
+        <!-- Footer -->
+        <div class="developer-footer">
+          <p class="developer-text">Developed by <span class="developer-name">Tahosin</span></p>
+        </div>
+      </section>
     </main>
+
+    <!-- Coming Soon -->
+    <div class="coming-soon-page" id="comingSoonPage">
+      <div class="coming-soon-content">
+        <h2 class="coming-soon-title">Coming Soon</h2>
+        <p class="coming-soon-message" id="comingSoonMessage">Wait, it's not completed</p>
+        <button class="back-btn" id="backBtn">Back to Home</button>
+      </div>
+    </div>
   </div>
- </body>
+
+  <script>
+    // Default Config
+    const defaultConfig = {
+      website_name: "HOCKS",
+      tagline: "Create anything with the power of artificial intelligence",
+      coming_soon_message: "Wait, it's not completed"
+    };
+
+    async function onConfigChange(config) {
+      document.getElementById('websiteTitle').textContent = config.website_name || defaultConfig.website_name;
+      document.getElementById('heroTitle').textContent = config.website_name || defaultConfig.website_name;
+      document.getElementById('tagline').textContent = config.tagline || defaultConfig.tagline;
+      document.getElementById('comingSoonMessage').textContent = config.coming_soon_message || defaultConfig.coming_soon_message;
+    }
+
+    if(window.elementSdk){
+      window.elementSdk.init({ defaultConfig, onConfigChange });
+    }
+
+    // Menu Toggle
+    const menuIcon = document.getElementById('menuIcon');
+    const sideMenu = document.getElementById('sideMenu');
+    let menuOpen = false;
+    menuIcon.addEventListener('click',()=>{
+      menuOpen=!menuOpen;
+      sideMenu.classList.toggle('open');
+    });
+
+    // Coming Soon
+    const featureCards = document.querySelectorAll('.feature-card');
+    const menuItems = document.querySelectorAll('.menu-item');
+    const comingSoonPage = document.getElementById('comingSoonPage');
+    const mainContent = document.getElementById('mainContent');
+    const backBtn = document.getElementById('backBtn');
+
+    function showComingSoon(){ comingSoonPage.classList.add('active'); mainContent.style.display='none'; sideMenu.classList.remove('open'); menuOpen=false; }
+    function hideComingSoon(){ comingSoonPage.classList.remove('active'); mainContent.style.display='flex'; }
+
+    featureCards.forEach(card=>card.addEventListener('click',showComingSoon));
+    menuItems.forEach(item=>item.addEventListener('click',showComingSoon));
+    backBtn.addEventListener('click',hideComingSoon);
+
+    // Chat Event
+    const sendBtn = document.getElementById('sendBtn');
+    const chatInput = document.getElementById('chatInput');
+    sendBtn.addEventListener('click',()=>{
+      if(chatInput.value.trim()){ alert("AI response will appear here (Coming Soon)"); chatInput.value=""; }
+    });
+  </script>
+</body>
 </html>
