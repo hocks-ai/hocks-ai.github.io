@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HOCKS - AI Platform</title>
   <script src="/_sdk/element_sdk.js"></script>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <style>
     * {
       margin: 0;
@@ -111,6 +114,7 @@
     .auth-buttons {
       display: flex;
       gap: 15px;
+      align-items: center;
     }
 
     .btn-login, .btn-signup, .btn-logout {
@@ -158,20 +162,112 @@
     .user-info {
       display: flex;
       align-items: center;
+      gap: 15px;
+    }
+
+    .user-details {
+      display: flex;
+      align-items: center;
       gap: 10px;
-      color: #00ff9d;
-      font-weight: 600;
     }
 
     .user-avatar {
-      width: 35px;
-      height: 35px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       background: linear-gradient(135deg, #00ff9d 0%, #00d4ff 100%);
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: bold;
+      font-size: 18px;
+    }
+
+    .user-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .user-name {
+      color: #00ff9d;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .user-email {
+      color: #b0b0b0;
+      font-size: 12px;
+    }
+
+    /* Auth Status Notification */
+    .auth-status {
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      padding: 12px 20px;
+      background: rgba(0, 255, 157, 0.1);
+      border: 1px solid rgba(0, 255, 157, 0.3);
+      border-radius: 10px;
+      color: #00ff9d;
+      font-size: 14px;
+      z-index: 1001;
+      animation: slideIn 0.3s ease;
+      display: none;
+    }
+
+    .auth-status.show {
+      display: block;
+    }
+
+    .auth-status.error {
+      background: rgba(255, 65, 108, 0.1);
+      border: 1px solid rgba(255, 65, 108, 0.3);
+      color: #ff416c;
+    }
+
+    .auth-status.success {
+      background: rgba(0, 255, 157, 0.1);
+      border: 1px solid rgba(0, 255, 157, 0.3);
+      color: #00ff9d;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Loader */
+    .loader {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 2001;
+    }
+
+    .loader.active {
+      display: block;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid rgba(0, 255, 157, 0.3);
+      border-top: 5px solid #00ff9d;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
 
     /* Side Menu */
@@ -566,6 +662,14 @@
         height: 30px;
       }
 
+      .user-name {
+        font-size: 12px;
+      }
+
+      .user-email {
+        font-size: 10px;
+      }
+
       .features-grid {
         grid-template-columns: 1fr;
       }
@@ -576,6 +680,13 @@
 
       .coming-soon-message {
         font-size: 18px;
+      }
+
+      .auth-status {
+        top: 70px;
+        right: 10px;
+        left: 10px;
+        font-size: 12px;
       }
     }
 
@@ -596,6 +707,14 @@
   <div class="main-container">
    <div class="gradient-bg"></div>
    
+   <!-- Auth Status Notification -->
+   <div class="auth-status" id="authStatus"></div>
+   
+   <!-- Loader -->
+   <div class="loader" id="loader">
+     <div class="spinner"></div>
+   </div>
+   
    <!-- Navigation Header -->
    <header class="nav-header">
     <div class="menu-icon" id="menuIcon">
@@ -609,8 +728,13 @@
       <button class="btn-login" id="loginBtn">Login</button>
       <button class="btn-signup" id="signupBtn">Sign Up</button>
       <div class="user-info" id="userInfo" style="display: none;">
-        <div class="user-avatar" id="userAvatar">U</div>
-        <span id="username">User</span>
+        <div class="user-details">
+          <div class="user-avatar" id="userAvatar">U</div>
+          <div class="user-text">
+            <span class="user-name" id="userName">User</span>
+            <span class="user-email" id="userEmail">user@example.com</span>
+          </div>
+        </div>
         <button class="btn-logout" id="logoutBtn">Logout</button>
       </div>
     </div>
@@ -770,97 +894,234 @@
       });
     }
 
-    // Authentication State Management
-    class AuthManager {
+    // Firebase Configuration - TUMI EIKHANE APNAR FIREBASE CONFIG DITEO
+    const firebaseConfig = {
+      apiKey: "AIzaSyC_-SRh3aovs5YWULB0qzhYKWLJvIH8FYs",
+      authDomain: "hocks-ai-a377c.firebaseapp.com",
+      projectId: "hocks-ai-a377c",
+      storageBucket: "hocks-ai-a377c.firebasestorage.app",
+      messagingSenderId: "667039824852",
+      appId: "1:667039824852:web:7ca1bd8bdf02e97cbe3441",
+      measurementId: "G-PC95919LET"
+    };
+
+    // Initialize Firebase
+    let firebaseApp;
+    let firebaseAuth;
+    
+    try {
+      firebaseApp = firebase.initializeApp(firebaseConfig);
+      firebaseAuth = firebase.auth();
+      
+      console.log("Firebase initialized successfully!");
+    } catch (error) {
+      console.error("Firebase initialization error:", error);
+      showAuthStatus("Firebase initialization failed. Please check your configuration.", "error");
+    }
+
+    // Firebase Authentication Manager
+    class FirebaseAuthManager {
       constructor() {
-        this.isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-        this.username = localStorage.getItem('username') || '';
-        this.email = localStorage.getItem('email') || '';
+        this.currentUser = null;
+        this.authStatusElement = document.getElementById('authStatus');
+        this.loaderElement = document.getElementById('loader');
         
-        // Check if redirected from signup/login
-        this.checkRedirect();
+        // Initialize auth state listener
+        this.initAuthListener();
       }
       
-      checkRedirect() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const action = urlParams.get('action');
-        const username = urlParams.get('username');
-        const email = urlParams.get('email');
+      initAuthListener() {
+        if (!firebaseAuth) return;
         
-        if (action === 'signup' || action === 'login') {
-          if (username && email) {
-            this.login(username, email);
-            // Clean URL
-            window.history.replaceState({}, document.title, window.location.pathname);
+        firebaseAuth.onAuthStateChanged((user) => {
+          this.currentUser = user;
+          this.updateUI();
+          
+          if (user) {
+            console.log("User is signed in:", user.email);
+            this.showWelcomeMessage(user);
+            this.saveUserToLocalStorage(user);
+          } else {
+            console.log("User is signed out");
+            this.clearUserFromLocalStorage();
           }
+        });
+      }
+      
+      showWelcomeMessage(user) {
+        const welcomeMessage = document.getElementById('welcomeMessage');
+        const welcomeUsername = document.getElementById('welcomeUsername');
+        
+        if (welcomeMessage && welcomeUsername) {
+          welcomeUsername.textContent = user.displayName || user.email.split('@')[0];
+          welcomeMessage.classList.add('show');
+          setTimeout(() => {
+            welcomeMessage.classList.remove('show');
+          }, 3000);
         }
       }
       
-      login(username, email) {
-        this.isLoggedIn = true;
-        this.username = username;
-        this.email = email;
-        
-        localStorage.setItem('isLoggedIn', 'true');
-        localStorage.setItem('username', username);
-        localStorage.setItem('email', email);
-        
-        this.updateUI();
-        
-        // Show welcome message
-        setTimeout(() => {
-          const welcomeMessage = document.getElementById('welcomeMessage');
-          if (welcomeMessage) {
-            welcomeMessage.classList.add('show');
-            setTimeout(() => {
-              welcomeMessage.classList.remove('show');
-            }, 3000);
-          }
-        }, 500);
+      saveUserToLocalStorage(user) {
+        localStorage.setItem('firebase_user', JSON.stringify({
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName,
+          photoURL: user.photoURL
+        }));
       }
       
-      logout() {
-        this.isLoggedIn = false;
-        this.username = '';
-        this.email = '';
+      clearUserFromLocalStorage() {
+        localStorage.removeItem('firebase_user');
+      }
+      
+      getUserFromLocalStorage() {
+        const userData = localStorage.getItem('firebase_user');
+        return userData ? JSON.parse(userData) : null;
+      }
+      
+      async login(email, password) {
+        this.showLoader();
         
-        localStorage.removeItem('isLoggedIn');
-        localStorage.removeItem('username');
-        localStorage.removeItem('email');
+        try {
+          const userCredential = await firebaseAuth.signInWithEmailAndPassword(email, password);
+          this.showAuthStatus("Login successful! Welcome back!", "success");
+          return { success: true, user: userCredential.user };
+        } catch (error) {
+          let errorMessage = "Login failed. ";
+          
+          switch(error.code) {
+            case 'auth/invalid-email':
+              errorMessage += "Invalid email address.";
+              break;
+            case 'auth/user-disabled':
+              errorMessage += "This account has been disabled.";
+              break;
+            case 'auth/user-not-found':
+              errorMessage += "No account found with this email.";
+              break;
+            case 'auth/wrong-password':
+              errorMessage += "Incorrect password.";
+              break;
+            default:
+              errorMessage += error.message;
+          }
+          
+          this.showAuthStatus(errorMessage, "error");
+          return { success: false, error: errorMessage };
+        } finally {
+          this.hideLoader();
+        }
+      }
+      
+      async signup(email, password, displayName) {
+        this.showLoader();
         
-        this.updateUI();
+        try {
+          const userCredential = await firebaseAuth.createUserWithEmailAndPassword(email, password);
+          
+          // Update display name
+          if (displayName) {
+            await userCredential.user.updateProfile({
+              displayName: displayName
+            });
+          }
+          
+          this.showAuthStatus("Account created successfully! Welcome!", "success");
+          return { success: true, user: userCredential.user };
+        } catch (error) {
+          let errorMessage = "Signup failed. ";
+          
+          switch(error.code) {
+            case 'auth/email-already-in-use':
+              errorMessage += "Email is already in use.";
+              break;
+            case 'auth/invalid-email':
+              errorMessage += "Invalid email address.";
+              break;
+            case 'auth/weak-password':
+              errorMessage += "Password is too weak. Use at least 6 characters.";
+              break;
+            default:
+              errorMessage += error.message;
+          }
+          
+          this.showAuthStatus(errorMessage, "error");
+          return { success: false, error: errorMessage };
+        } finally {
+          this.hideLoader();
+        }
+      }
+      
+      async logout() {
+        this.showLoader();
         
-        // Show logout message
-        alert('You have been logged out successfully!');
+        try {
+          await firebaseAuth.signOut();
+          this.showAuthStatus("Logged out successfully!", "success");
+          return { success: true };
+        } catch (error) {
+          this.showAuthStatus("Logout failed: " + error.message, "error");
+          return { success: false, error: error.message };
+        } finally {
+          this.hideLoader();
+        }
       }
       
       updateUI() {
         const loginBtn = document.getElementById('loginBtn');
         const signupBtn = document.getElementById('signupBtn');
         const userInfo = document.getElementById('userInfo');
-        const usernameSpan = document.getElementById('username');
-        const welcomeUsername = document.getElementById('welcomeUsername');
+        const userName = document.getElementById('userName');
+        const userEmail = document.getElementById('userEmail');
         const userAvatar = document.getElementById('userAvatar');
+        const welcomeUsername = document.getElementById('welcomeUsername');
         
-        if (this.isLoggedIn) {
-          // Show user info and logout button
+        if (this.currentUser) {
+          // User is logged in
           loginBtn.style.display = 'none';
           signupBtn.style.display = 'none';
           userInfo.style.display = 'flex';
           
           // Update user info
-          usernameSpan.textContent = this.username;
-          if (welcomeUsername) welcomeUsername.textContent = this.username;
+          const displayName = this.currentUser.displayName || this.currentUser.email.split('@')[0];
+          userName.textContent = displayName;
+          userEmail.textContent = this.currentUser.email;
+          if (welcomeUsername) welcomeUsername.textContent = displayName;
           
-          // Update avatar with first letter
+          // Update avatar
           if (userAvatar) {
-            userAvatar.textContent = this.username.charAt(0).toUpperCase();
+            userAvatar.textContent = displayName.charAt(0).toUpperCase();
           }
         } else {
-          // Show login and signup buttons
+          // User is logged out
           loginBtn.style.display = 'block';
           signupBtn.style.display = 'block';
           userInfo.style.display = 'none';
+        }
+      }
+      
+      showLoader() {
+        if (this.loaderElement) {
+          this.loaderElement.classList.add('active');
+        }
+      }
+      
+      hideLoader() {
+        if (this.loaderElement) {
+          this.loaderElement.classList.remove('active');
+        }
+      }
+      
+      showAuthStatus(message, type = "info") {
+        if (this.authStatusElement) {
+          this.authStatusElement.textContent = message;
+          this.authStatusElement.className = `auth-status ${type}`;
+          this.authStatusElement.classList.add('show');
+          
+          // Auto hide after 5 seconds
+          setTimeout(() => {
+            this.authStatusElement.classList.remove('show');
+          }, 5000);
         }
       }
       
@@ -873,8 +1134,8 @@
       }
     }
 
-    // Initialize Auth Manager
-    const authManager = new AuthManager();
+    // Initialize Firebase Auth Manager
+    const authManager = new FirebaseAuthManager();
 
     // Menu toggle functionality
     const menuIcon = document.getElementById('menuIcon');
@@ -915,7 +1176,7 @@
 
     featureCards.forEach(card => {
       card.addEventListener('click', () => {
-        if (!authManager.isLoggedIn) {
+        if (!authManager.currentUser) {
           if (confirm('Please login or signup to access this feature!')) {
             authManager.redirectToLogin();
           }
@@ -927,7 +1188,7 @@
 
     menuItems.forEach(item => {
       item.addEventListener('click', () => {
-        if (!authManager.isLoggedIn) {
+        if (!authManager.currentUser) {
           if (confirm('Please login or signup to access this feature!')) {
             authManager.redirectToLogin();
           }
@@ -941,7 +1202,7 @@
 
     // Chat functionality
     sendBtn.addEventListener('click', () => {
-      if (!authManager.isLoggedIn) {
+      if (!authManager.currentUser) {
         if (confirm('Please login or signup to use the chat feature!')) {
           authManager.redirectToLogin();
         }
@@ -955,7 +1216,7 @@
     });
 
     chatInput.addEventListener('keypress', (e) => {
-      if (!authManager.isLoggedIn) {
+      if (!authManager.currentUser) {
         if (e.key === 'Enter') {
           if (confirm('Please login or signup to use the chat feature!')) {
             authManager.redirectToLogin();
@@ -993,46 +1254,49 @@
       }
     });
 
-    // Initialize UI based on auth state
-    document.addEventListener('DOMContentLoaded', () => {
-      authManager.updateUI();
-    });
-
-    // Prevent unauthorized access to features
-    document.addEventListener('DOMContentLoaded', () => {
-      if (!authManager.isLoggedIn) {
-        // Add click listeners to show login prompt for protected features
-        const protectedElements = document.querySelectorAll('.feature-card, .menu-item, .send-btn, .chat-input');
-        
-        protectedElements.forEach(element => {
-          if (element !== chatInput) { // Don't double-add to chat input
-            element.addEventListener('click', function(e) {
-              if (!authManager.isLoggedIn && !this.classList.contains('feature-card')) {
-                e.preventDefault();
-                if (confirm('Please login or signup to access this feature!')) {
-                  authManager.redirectToLogin();
-                }
-              }
-            });
-          }
-        });
-      }
-    });
-
-    // Simulate user interaction for demo
-    function simulateDemoLogin() {
-      // Check if demo mode is enabled via URL parameter
+    // Check for auth redirect from other pages
+    function checkAuthRedirect() {
       const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get('demo') === 'true') {
-        setTimeout(() => {
-          authManager.login('DemoUser', 'demo@hocks.ai');
-          alert('Demo mode activated! You are now logged in as DemoUser.');
-        }, 1000);
+      const action = urlParams.get('action');
+      
+      if (action === 'login' || action === 'signup') {
+        // Clear the URL parameters
+        window.history.replaceState({}, document.title, window.location.pathname);
+        
+        // Show success message
+        if (authManager.currentUser) {
+          authManager.showAuthStatus("Welcome to HOCKS AI Platform!", "success");
+        }
       }
     }
 
-    // Run demo simulation on page load
-    window.addEventListener('load', simulateDemoLogin);
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      checkAuthRedirect();
+    });
+
+    // Check Firebase connection on load
+    window.addEventListener('load', () => {
+      if (!firebaseApp) {
+        console.warn("Firebase not initialized. Using fallback auth system.");
+        
+        // Fallback to localStorage auth if Firebase fails
+        const fallbackUser = localStorage.getItem('firebase_user');
+        if (fallbackUser) {
+          try {
+            const userData = JSON.parse(fallbackUser);
+            authManager.currentUser = { 
+              email: userData.email, 
+              displayName: userData.displayName,
+              emailVerified: true 
+            };
+            authManager.updateUI();
+          } catch (e) {
+            console.error("Error parsing fallback user:", e);
+          }
+        }
+      }
+    });
   </script>
  </body>
-         </html>
+ </html>
