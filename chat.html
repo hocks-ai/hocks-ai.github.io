@@ -309,6 +309,20 @@
       flex-shrink: 0;
     }
     
+    /* Info message */
+    .info-banner {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(29, 78, 216, 0.1));
+      border: 2px solid rgba(59, 130, 246, 0.5);
+      border-radius: 12px;
+      padding: 1rem 1.5rem;
+      margin: 1rem;
+      color: #b3d9ff;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      font-size: 0.95rem;
+    }
+    
     /* Document card */
     .document-card {
       background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 204, 102, 0.05));
@@ -509,6 +523,27 @@
       30% { transform: translateY(-10px); }
     }
     
+    /* Status indicator */
+    .status-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.8rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 10px;
+      background: rgba(0, 255, 136, 0.1);
+      border: 1px solid rgba(0, 255, 136, 0.3);
+      margin-left: 0.5rem;
+    }
+    
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #00ff88;
+      animation: pulse 1.5s infinite;
+    }
+    
     /* Responsive adjustments */
     @media (max-width: 768px) {
       .chat-main {
@@ -628,9 +663,13 @@
     // 🔗 Cloudflare Workers URL
     const CLOUDFLARE_WORKER_URL = "https://hocks-ai-backend.test125256.workers.dev/chat";
     
+    // 🔑 OpenAI API Key (temporary - for fallback)
+    const OPENAI_API_KEY = "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";
+    
     let messageIdCounter = 0;
     let conversationHistory = [];
     let isProcessing = false;
+    let useDirectAPI = false; // Flag to track if we're using direct API
     
     // Create animated background
     function createNetworkBackground() {
@@ -675,6 +714,26 @@
       }, 5000);
     }
     
+    // Show info banner
+    function showInfoBanner(message) {
+      const chatMessages = document.getElementById('chatMessages');
+      const infoDiv = document.createElement('div');
+      infoDiv.className = 'info-banner';
+      infoDiv.innerHTML = `
+        <div class="error-banner-icon">💡</div>
+        <div>${message}</div>
+      `;
+      chatMessages.appendChild(infoDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      
+      // Auto remove after 5 seconds
+      setTimeout(() => {
+        if (infoDiv.parentNode) {
+          infoDiv.remove();
+        }
+      }, 5000);
+    }
+    
     // Add a message to the chat
     function addMessage(text, isUser = false, isTyping = false) {
       const chatMessages = document.getElementById('chatMessages');
@@ -699,6 +758,25 @@
         bubbleDiv.appendChild(typingIndicator);
       } else {
         bubbleDiv.textContent = text;
+        
+        // Add status indicator for bot messages
+        if (!isUser) {
+          const statusSpan = document.createElement('span');
+          statusSpan.className = 'status-indicator';
+          if (useDirectAPI) {
+            statusSpan.innerHTML = `
+              <span class="status-dot" style="background: #ff9900;"></span>
+              Direct API
+            `;
+          } else {
+            statusSpan.innerHTML = `
+              <span class="status-dot"></span>
+              Cloudflare
+            `;
+          }
+          bubbleDiv.appendChild(document.createElement('br'));
+          bubbleDiv.appendChild(statusSpan);
+        }
       }
       
       messageDiv.appendChild(avatarDiv);
@@ -710,6 +788,26 @@
       return messageDiv;
     }
     
+    // Test Cloudflare Worker connection
+    async function testWorkerConnection() {
+      try {
+        const response = await fetch(CLOUDFLARE_WORKER_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            message: "test",
+            temperature: 0.7
+          })
+        });
+        
+        return response.ok;
+      } catch (error) {
+        return false;
+      }
+    }
+    
     // Call Cloudflare Worker for AI response
     async function callOpenAI(userMessage) {
       conversationHistory.push({
@@ -717,71 +815,101 @@
         content: userMessage
       });
       
-      try {
-        // Try different payload formats to find which one works
-        let response;
-        let data;
-        
-        // Try Format 1: Only message field (most likely format)
+      // Try Cloudflare Worker first
+      if (!useDirectAPI) {
         try {
-          const payload1 = {
+          const payload = {
             message: userMessage,
             temperature: 0.7,
             max_tokens: 500
           };
           
-          response = await fetch(CLOUDFLARE_WORKER_URL, {
+          const response = await fetch(CLOUDFLARE_WORKER_URL, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
             },
-            body: JSON.stringify(payload1)
+            body: JSON.stringify(payload)
           });
           
-          data = await response.json();
-          
           if (!response.ok) {
-            throw new Error(data.error || `HTTP ${response.status}`);
+            const errorText = await response.text();
+            throw new Error(`Worker Error: ${response.status} - ${errorText}`);
           }
-        } catch (format1Error) {
-          console.log('Format 1 failed:', format1Error.message);
           
-          // Try Format 2: With messages array
-          const payload2 = {
+          const data = await response.json();
+          
+          // Extract response from different possible formats
+          let aiResponse;
+          if (data.response) {
+            aiResponse = data.response;
+          } else if (data.choices && data.choices[0] && data.choices[0].message) {
+            aiResponse = data.choices[0].message.content;
+          } else if (data.content) {
+            aiResponse = data.content;
+          } else if (typeof data === 'string') {
+            aiResponse = data;
+          } else {
+            aiResponse = JSON.stringify(data);
+          }
+          
+          conversationHistory.push({
+            role: 'assistant',
+            content: aiResponse
+          });
+          
+          if (conversationHistory.length > 20) {
+            conversationHistory = conversationHistory.slice(-20);
+          }
+          
+          return aiResponse;
+          
+        } catch (workerError) {
+          console.error('Cloudflare Worker failed:', workerError);
+          useDirectAPI = true; // Switch to direct API
+          showInfoBanner('Switched to direct OpenAI API (Cloudflare Worker not working)');
+          
+          // Fall back to direct API
+          return await callDirectOpenAI(userMessage);
+        }
+      } else {
+        // Already using direct API
+        return await callDirectOpenAI(userMessage);
+      }
+    }
+    
+    // Direct OpenAI API call (fallback)
+    async function callDirectOpenAI(userMessage) {
+      try {
+        if (!OPENAI_API_KEY || OPENAI_API_KEY.trim() === '') {
+          throw new Error('OpenAI API Key is not configured.');
+        }
+        
+        // Using CORS proxy
+        const PROXY_URL = 'https://api.allorigins.win/raw?url=';
+        const API_URL = 'https://api.openai.com/v1/chat/completions';
+        
+        const response = await fetch(PROXY_URL + encodeURIComponent(API_URL), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${OPENAI_API_KEY}`
+          },
+          body: JSON.stringify({
+            model: 'gpt-3.5-turbo',
             messages: conversationHistory,
             temperature: 0.7,
             max_tokens: 500
-          };
-          
-          response = await fetch(CLOUDFLARE_WORKER_URL, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload2)
-          });
-          
-          data = await response.json();
-          
-          if (!response.ok) {
-            throw new Error(data.error || `HTTP ${response.status}`);
-          }
+          })
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error?.message || `OpenAI Error: ${response.status}`);
         }
         
-        // Extract response from different possible formats
-        let aiResponse;
-        
-        if (data.response) {
-          aiResponse = data.response;
-        } else if (data.choices && data.choices[0] && data.choices[0].message) {
-          aiResponse = data.choices[0].message.content;
-        } else if (data.content) {
-          aiResponse = data.content;
-        } else if (typeof data === 'string') {
-          aiResponse = data;
-        } else {
-          aiResponse = JSON.stringify(data);
-        }
+        const data = await response.json();
+        const aiResponse = data.choices[0].message.content;
         
         conversationHistory.push({
           role: 'assistant',
@@ -794,70 +922,45 @@
         
         return aiResponse;
       } catch (error) {
-        console.error('Cloudflare Worker Error:', error);
+        console.error('Direct OpenAI API Error:', error);
         
-        // Check if it's a worker connection issue
-        if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-          showErrorBanner('Cannot connect to Cloudflare Worker. Please check if the worker is deployed.');
-          return "I'm currently unable to connect to the AI service. This could be because:\n\n1. The Cloudflare Worker is not deployed\n2. There's a network issue\n\nPlease try again later.";
+        // Try alternative proxy
+        try {
+          const PROXY_URL = 'https://corsproxy.io/?';
+          const API_URL = 'https://api.openai.com/v1/chat/completions';
+          
+          const response = await fetch(PROXY_URL + encodeURIComponent(API_URL), {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${OPENAI_API_KEY}`
+            },
+            body: JSON.stringify({
+              model: 'gpt-3.5-turbo',
+              messages: conversationHistory,
+              temperature: 0.7,
+              max_tokens: 500
+            })
+          });
+          
+          const data = await response.json();
+          
+          if (data.error) {
+            throw new Error(data.error.message || 'Unknown error');
+          }
+          
+          const aiResponse = data.choices[0].message.content;
+          
+          conversationHistory.push({
+            role: 'assistant',
+            content: aiResponse
+          });
+          
+          return aiResponse;
+        } catch (fallbackError) {
+          console.error('Fallback also failed:', fallbackError);
+          throw new Error('Unable to connect to AI service. Please check your API key or try again later.');
         }
-        
-        if (error.message.includes('Message is required')) {
-          // Try direct OpenAI as fallback (with API key in client - temporary)
-          return await callOpenAIFallback(userMessage);
-        }
-        
-        showErrorBanner(`Error: ${error.message}`);
-        return `I apologize, but I encountered an error: ${error.message}`;
-      }
-    }
-    
-    // Fallback function if Cloudflare Worker fails
-    async function callOpenAIFallback(userMessage) {
-      try {
-        // Direct OpenAI API call as fallback (temporary solution)
-        const API_KEY = "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";
-        
-        if (!API_KEY || API_KEY.trim() === '') {
-          throw new Error('API Key not available');
-        }
-        
-        // Using CORS proxy
-        const PROXY_URL = 'https://api.allorigins.win/raw?url=';
-        const API_URL = 'https://api.openai.com/v1/chat/completions';
-        
-        const response = await fetch(PROXY_URL + encodeURIComponent(API_URL), {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${API_KEY}`
-          },
-          body: JSON.stringify({
-            model: 'gpt-3.5-turbo',
-            messages: conversationHistory,
-            temperature: 0.7,
-            max_tokens: 500
-          })
-        });
-        
-        if (!response.ok) {
-          throw new Error(`OpenAI Error: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        const aiResponse = data.choices[0].message.content;
-        
-        conversationHistory.push({
-          role: 'assistant',
-          content: aiResponse
-        });
-        
-        showErrorBanner('Note: Using direct OpenAI API (fallback mode)');
-        
-        return aiResponse;
-      } catch (fallbackError) {
-        console.error('Fallback also failed:', fallbackError);
-        return "I'm sorry, I'm having trouble connecting to the AI service. Please check your Cloudflare Worker configuration.";
       }
     }
     
@@ -871,7 +974,7 @@
         addMessage(aiResponse, false);
       } catch (error) {
         typingMessage.remove();
-        addMessage('Sorry, I encountered an unexpected error. Please try again.', false);
+        addMessage('Sorry, I encountered an error: ' + error.message, false);
       }
     }
     
@@ -940,14 +1043,25 @@
         const userMessage = addMessage(`I've uploaded a document:`, true);
         addDocumentCard(fileName, fileSize, userMessage);
         
-        showErrorBanner('Document upload is currently for display only. Full document analysis coming soon!');
+        showInfoBanner('Document upload is currently for display only. Full document analysis coming soon!');
       }
     }
     
     // Initialize chat
-    function initializeChat() {
+    async function initializeChat() {
       createNetworkBackground();
-      addMessage("Hello! I'm Hocks AI Assistant. How can I help you today?", false);
+      
+      // Test Cloudflare Worker connection
+      const isWorkerWorking = await testWorkerConnection();
+      
+      if (isWorkerWorking) {
+        addMessage("Hello! I'm Hocks AI Assistant. How can I help you today?", false);
+        showInfoBanner('Connected to Cloudflare Workers backend.');
+      } else {
+        addMessage("Hello! I'm Hocks AI Assistant. How can I help you today?", false);
+        showInfoBanner('Cloudflare Worker not responding. Using direct OpenAI API as fallback.');
+        useDirectAPI = true;
+      }
       
       // Event listeners
       document.getElementById('sendBtn').addEventListener('click', sendMessage);
@@ -981,7 +1095,7 @@
     
     // Handle offline/online status
     window.addEventListener('online', () => {
-      showErrorBanner('Connection restored! You can chat again.');
+      showInfoBanner('Connection restored! You can chat again.');
     });
     
     window.addEventListener('offline', () => {
