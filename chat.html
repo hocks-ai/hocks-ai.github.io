@@ -309,20 +309,6 @@
       flex-shrink: 0;
     }
     
-    /* Info message */
-    .info-banner {
-      background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(29, 78, 216, 0.1));
-      border: 2px solid rgba(59, 130, 246, 0.5);
-      border-radius: 12px;
-      padding: 1rem 1.5rem;
-      margin: 1rem;
-      color: #b3d9ff;
-      display: flex;
-      align-items: center;
-      gap: 0.8rem;
-      font-size: 0.95rem;
-    }
-    
     /* Document card */
     .document-card {
       background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 204, 102, 0.05));
@@ -523,27 +509,6 @@
       30% { transform: translateY(-10px); }
     }
     
-    /* Status indicator */
-    .status-indicator {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.3rem;
-      font-size: 0.8rem;
-      padding: 0.2rem 0.5rem;
-      border-radius: 10px;
-      background: rgba(0, 255, 136, 0.1);
-      border: 1px solid rgba(0, 255, 136, 0.3);
-      margin-left: 0.5rem;
-    }
-    
-    .status-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: #00ff88;
-      animation: pulse 1.5s infinite;
-    }
-    
     /* Responsive adjustments */
     @media (max-width: 768px) {
       .chat-main {
@@ -710,26 +675,6 @@
       }, 5000);
     }
     
-    // Show info banner
-    function showInfoBanner(message) {
-      const chatMessages = document.getElementById('chatMessages');
-      const infoDiv = document.createElement('div');
-      infoDiv.className = 'info-banner';
-      infoDiv.innerHTML = `
-        <div class="error-banner-icon">💡</div>
-        <div>${message}</div>
-      `;
-      chatMessages.appendChild(infoDiv);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-      
-      // Auto remove after 5 seconds
-      setTimeout(() => {
-        if (infoDiv.parentNode) {
-          infoDiv.remove();
-        }
-      }, 5000);
-    }
-    
     // Add a message to the chat
     function addMessage(text, isUser = false, isTyping = false) {
       const chatMessages = document.getElementById('chatMessages');
@@ -753,22 +698,7 @@
         }
         bubbleDiv.appendChild(typingIndicator);
       } else {
-        // Add status indicator for bot messages
-        if (!isUser) {
-          const textNode = document.createTextNode(text);
-          bubbleDiv.appendChild(textNode);
-          
-          // Add Cloudflare status indicator
-          const statusSpan = document.createElement('span');
-          statusSpan.className = 'status-indicator';
-          statusSpan.innerHTML = `
-            <span class="status-dot"></span>
-            Cloudflare
-          `;
-          bubbleDiv.appendChild(statusSpan);
-        } else {
-          bubbleDiv.textContent = text;
-        }
+        bubbleDiv.textContent = text;
       }
       
       messageDiv.appendChild(avatarDiv);
@@ -788,40 +718,69 @@
       });
       
       try {
-        const response = await fetch(CLOUDFLARE_WORKER_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
+        // Try different payload formats to find which one works
+        let response;
+        let data;
+        
+        // Try Format 1: Only message field (most likely format)
+        try {
+          const payload1 = {
+            message: userMessage,
+            temperature: 0.7,
+            max_tokens: 500
+          };
+          
+          response = await fetch(CLOUDFLARE_WORKER_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload1)
+          });
+          
+          data = await response.json();
+          
+          if (!response.ok) {
+            throw new Error(data.error || `HTTP ${response.status}`);
+          }
+        } catch (format1Error) {
+          console.log('Format 1 failed:', format1Error.message);
+          
+          // Try Format 2: With messages array
+          const payload2 = {
             messages: conversationHistory,
             temperature: 0.7,
             max_tokens: 500
-          })
-        });
-        
-        if (!response.ok) {
-          let errorMessage = `Worker Error: ${response.status}`;
-          try {
-            const errorData = await response.json();
-            errorMessage = errorData.error || errorMessage;
-          } catch (e) {
-            const errorText = await response.text();
-            errorMessage = errorText || errorMessage;
+          };
+          
+          response = await fetch(CLOUDFLARE_WORKER_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload2)
+          });
+          
+          data = await response.json();
+          
+          if (!response.ok) {
+            throw new Error(data.error || `HTTP ${response.status}`);
           }
-          throw new Error(errorMessage);
         }
         
-        const data = await response.json();
+        // Extract response from different possible formats
+        let aiResponse;
         
-        if (data.error) {
-          throw new Error(data.error);
-        }
-        
-        const aiResponse = data.response || data.choices?.[0]?.message?.content;
-        
-        if (!aiResponse) {
-          throw new Error('No response received from AI service');
+        if (data.response) {
+          aiResponse = data.response;
+        } else if (data.choices && data.choices[0] && data.choices[0].message) {
+          aiResponse = data.choices[0].message.content;
+        } else if (data.content) {
+          aiResponse = data.content;
+        } else if (typeof data === 'string') {
+          aiResponse = data;
+        } else {
+          aiResponse = JSON.stringify(data);
         }
         
         conversationHistory.push({
@@ -837,14 +796,68 @@
       } catch (error) {
         console.error('Cloudflare Worker Error:', error);
         
-        // Fallback message if worker fails
+        // Check if it's a worker connection issue
         if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-          showInfoBanner('Cloudflare Worker is not responding. Please check if the worker is deployed and running.');
-          return "I'm currently having trouble connecting to the AI service. This could be because:\n\n1. The Cloudflare Worker is not deployed\n2. The Worker URL is incorrect\n3. There's a network issue\n\nPlease check your Cloudflare Worker configuration and try again.";
+          showErrorBanner('Cannot connect to Cloudflare Worker. Please check if the worker is deployed.');
+          return "I'm currently unable to connect to the AI service. This could be because:\n\n1. The Cloudflare Worker is not deployed\n2. There's a network issue\n\nPlease try again later.";
+        }
+        
+        if (error.message.includes('Message is required')) {
+          // Try direct OpenAI as fallback (with API key in client - temporary)
+          return await callOpenAIFallback(userMessage);
         }
         
         showErrorBanner(`Error: ${error.message}`);
         return `I apologize, but I encountered an error: ${error.message}`;
+      }
+    }
+    
+    // Fallback function if Cloudflare Worker fails
+    async function callOpenAIFallback(userMessage) {
+      try {
+        // Direct OpenAI API call as fallback (temporary solution)
+        const API_KEY = "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";
+        
+        if (!API_KEY || API_KEY.trim() === '') {
+          throw new Error('API Key not available');
+        }
+        
+        // Using CORS proxy
+        const PROXY_URL = 'https://api.allorigins.win/raw?url=';
+        const API_URL = 'https://api.openai.com/v1/chat/completions';
+        
+        const response = await fetch(PROXY_URL + encodeURIComponent(API_URL), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${API_KEY}`
+          },
+          body: JSON.stringify({
+            model: 'gpt-3.5-turbo',
+            messages: conversationHistory,
+            temperature: 0.7,
+            max_tokens: 500
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error(`OpenAI Error: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        const aiResponse = data.choices[0].message.content;
+        
+        conversationHistory.push({
+          role: 'assistant',
+          content: aiResponse
+        });
+        
+        showErrorBanner('Note: Using direct OpenAI API (fallback mode)');
+        
+        return aiResponse;
+      } catch (fallbackError) {
+        console.error('Fallback also failed:', fallbackError);
+        return "I'm sorry, I'm having trouble connecting to the AI service. Please check your Cloudflare Worker configuration.";
       }
     }
     
@@ -927,41 +940,14 @@
         const userMessage = addMessage(`I've uploaded a document:`, true);
         addDocumentCard(fileName, fileSize, userMessage);
         
-        showInfoBanner('Document upload is currently for display only. Full document analysis will be available in future updates!');
-      }
-    }
-    
-    // Test Cloudflare Worker connection
-    async function testWorkerConnection() {
-      try {
-        const response = await fetch(CLOUDFLARE_WORKER_URL.replace('/chat', ''), {
-          method: 'GET'
-        });
-        
-        if (response.ok) {
-          console.log('Cloudflare Worker is accessible');
-          return true;
-        }
-      } catch (error) {
-        console.warn('Cloudflare Worker test failed:', error);
-        return false;
+        showErrorBanner('Document upload is currently for display only. Full document analysis coming soon!');
       }
     }
     
     // Initialize chat
-    async function initializeChat() {
+    function initializeChat() {
       createNetworkBackground();
-      
-      // Test worker connection
-      const isWorkerAccessible = await testWorkerConnection();
-      
-      if (isWorkerAccessible) {
-        addMessage("Hello! I'm Hocks AI Assistant, powered by Cloudflare Workers. How can I help you today?", false);
-        showInfoBanner('Connected to Cloudflare Workers backend. Your API key is securely stored on the server.');
-      } else {
-        addMessage("Hello! I'm Hocks AI Assistant.", false);
-        showErrorBanner('Warning: Unable to connect to Cloudflare Workers. Please ensure your worker is deployed at the correct URL.');
-      }
+      addMessage("Hello! I'm Hocks AI Assistant. How can I help you today?", false);
       
       // Event listeners
       document.getElementById('sendBtn').addEventListener('click', sendMessage);
@@ -985,7 +971,7 @@
       // Add a hint for first-time users
       setTimeout(() => {
         if (conversationHistory.length === 1) {
-          addMessage("You can ask me anything! I'm using Cloudflare Workers as a secure backend for AI processing.", false);
+          addMessage("You can ask me anything! Try asking about technology, programming, or general knowledge.", false);
         }
       }, 2000);
     }
@@ -995,20 +981,12 @@
     
     // Handle offline/online status
     window.addEventListener('online', () => {
-      showInfoBanner('Connection restored! You can chat again.');
+      showErrorBanner('Connection restored! You can chat again.');
     });
     
     window.addEventListener('offline', () => {
       showErrorBanner('You are offline. Please check your internet connection.');
     });
-    
-    // Periodic connection check
-    setInterval(async () => {
-      const isWorkerAccessible = await testWorkerConnection();
-      if (!isWorkerAccessible) {
-        showErrorBanner('Lost connection to Cloudflare Workers. Some features may not work.');
-      }
-    }, 30000); // Check every 30 seconds
   </script>
  </body>
-      </html>
+ </html>
