@@ -309,6 +309,20 @@
       flex-shrink: 0;
     }
     
+    /* Info message */
+    .info-banner {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(29, 78, 216, 0.1));
+      border: 2px solid rgba(59, 130, 246, 0.5);
+      border-radius: 12px;
+      padding: 1rem 1.5rem;
+      margin: 1rem;
+      color: #b3d9ff;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      font-size: 0.95rem;
+    }
+    
     /* Document card */
     .document-card {
       background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 204, 102, 0.05));
@@ -509,6 +523,27 @@
       30% { transform: translateY(-10px); }
     }
     
+    /* Status indicator */
+    .status-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.8rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 10px;
+      background: rgba(0, 255, 136, 0.1);
+      border: 1px solid rgba(0, 255, 136, 0.3);
+      margin-left: 0.5rem;
+    }
+    
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #00ff88;
+      animation: pulse 1.5s infinite;
+    }
+    
     /* Responsive adjustments */
     @media (max-width: 768px) {
       .chat-main {
@@ -625,8 +660,8 @@
    </div>
   </div>
   <script>
-    // 🔑 YOUR OPENAI API KEY - Updated with your new key
-    const OPENAI_API_KEY = "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";
+    // 🔗 Cloudflare Workers URL
+    const CLOUDFLARE_WORKER_URL = "https://hocks-ai-backend.test125256.workers.dev/chat";
     
     let messageIdCounter = 0;
     let conversationHistory = [];
@@ -675,6 +710,26 @@
       }, 5000);
     }
     
+    // Show info banner
+    function showInfoBanner(message) {
+      const chatMessages = document.getElementById('chatMessages');
+      const infoDiv = document.createElement('div');
+      infoDiv.className = 'info-banner';
+      infoDiv.innerHTML = `
+        <div class="error-banner-icon">💡</div>
+        <div>${message}</div>
+      `;
+      chatMessages.appendChild(infoDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      
+      // Auto remove after 5 seconds
+      setTimeout(() => {
+        if (infoDiv.parentNode) {
+          infoDiv.remove();
+        }
+      }, 5000);
+    }
+    
     // Add a message to the chat
     function addMessage(text, isUser = false, isTyping = false) {
       const chatMessages = document.getElementById('chatMessages');
@@ -698,7 +753,22 @@
         }
         bubbleDiv.appendChild(typingIndicator);
       } else {
-        bubbleDiv.textContent = text;
+        // Add status indicator for bot messages
+        if (!isUser) {
+          const textNode = document.createTextNode(text);
+          bubbleDiv.appendChild(textNode);
+          
+          // Add Cloudflare status indicator
+          const statusSpan = document.createElement('span');
+          statusSpan.className = 'status-indicator';
+          statusSpan.innerHTML = `
+            <span class="status-dot"></span>
+            Cloudflare
+          `;
+          bubbleDiv.appendChild(statusSpan);
+        } else {
+          bubbleDiv.textContent = text;
+        }
       }
       
       messageDiv.appendChild(avatarDiv);
@@ -710,31 +780,20 @@
       return messageDiv;
     }
     
-    // Call OpenAI API through CORS proxy
+    // Call Cloudflare Worker for AI response
     async function callOpenAI(userMessage) {
-      if (!OPENAI_API_KEY || OPENAI_API_KEY.trim() === '') {
-        showErrorBanner('API Key is not configured.');
-        return 'I am not properly configured yet.';
-      }
-      
       conversationHistory.push({
         role: 'user',
         content: userMessage
       });
       
       try {
-        // Using CORS proxy to avoid GitHub Pages CORS issues
-        const PROXY_URL = 'https://api.allorigins.win/raw?url=';
-        const API_URL = 'https://api.openai.com/v1/chat/completions';
-        
-        const response = await fetch(PROXY_URL + encodeURIComponent(API_URL), {
+        const response = await fetch(CLOUDFLARE_WORKER_URL, {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${OPENAI_API_KEY}`
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            model: 'gpt-3.5-turbo',
             messages: conversationHistory,
             temperature: 0.7,
             max_tokens: 500
@@ -742,21 +801,28 @@
         });
         
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          
-          if (response.status === 401) {
-            throw new Error('Invalid API Key. Please check the configuration.');
-          } else if (response.status === 429) {
-            throw new Error('Rate limit exceeded. Please wait a moment and try again.');
-          } else if (response.status === 403) {
-            throw new Error('Access forbidden. Your API key may have insufficient permissions.');
-          } else {
-            throw new Error(errorData.error?.message || `API Error: ${response.status}`);
+          let errorMessage = `Worker Error: ${response.status}`;
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.error || errorMessage;
+          } catch (e) {
+            const errorText = await response.text();
+            errorMessage = errorText || errorMessage;
           }
+          throw new Error(errorMessage);
         }
         
         const data = await response.json();
-        const aiResponse = data.choices[0].message.content;
+        
+        if (data.error) {
+          throw new Error(data.error);
+        }
+        
+        const aiResponse = data.response || data.choices?.[0]?.message?.content;
+        
+        if (!aiResponse) {
+          throw new Error('No response received from AI service');
+        }
         
         conversationHistory.push({
           role: 'assistant',
@@ -769,61 +835,16 @@
         
         return aiResponse;
       } catch (error) {
-        console.error('OpenAI API Error:', error);
+        console.error('Cloudflare Worker Error:', error);
         
-        // Try alternative proxy if first fails
-        if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
-          return await callOpenAIFallback(userMessage);
-        }
-        
-        if (error.message.includes('quota') || error.message.includes('billing')) {
-          showErrorBanner('API quota exceeded. Please check your OpenAI account billing.');
-          return 'I apologize, but my service quota has been exceeded. Please try again later.';
+        // Fallback message if worker fails
+        if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+          showInfoBanner('Cloudflare Worker is not responding. Please check if the worker is deployed and running.');
+          return "I'm currently having trouble connecting to the AI service. This could be because:\n\n1. The Cloudflare Worker is not deployed\n2. The Worker URL is incorrect\n3. There's a network issue\n\nPlease check your Cloudflare Worker configuration and try again.";
         }
         
         showErrorBanner(`Error: ${error.message}`);
         return `I apologize, but I encountered an error: ${error.message}`;
-      }
-    }
-    
-    // Fallback function if first proxy fails
-    async function callOpenAIFallback(userMessage) {
-      try {
-        // Alternative proxy
-        const PROXY_URL = 'https://corsproxy.io/?';
-        const API_URL = 'https://api.openai.com/v1/chat/completions';
-        
-        const response = await fetch(PROXY_URL + encodeURIComponent(API_URL), {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${OPENAI_API_KEY}`
-          },
-          body: JSON.stringify({
-            model: 'gpt-3.5-turbo',
-            messages: conversationHistory,
-            temperature: 0.7,
-            max_tokens: 500
-          })
-        });
-        
-        const data = await response.json();
-        
-        if (data.error) {
-          throw new Error(data.error.message || 'Unknown error');
-        }
-        
-        const aiResponse = data.choices[0].message.content;
-        
-        conversationHistory.push({
-          role: 'assistant',
-          content: aiResponse
-        });
-        
-        return aiResponse;
-      } catch (fallbackError) {
-        console.error('Fallback also failed:', fallbackError);
-        return 'Sorry, I am having trouble connecting to the AI service. Please try again later.';
       }
     }
     
@@ -837,7 +858,7 @@
         addMessage(aiResponse, false);
       } catch (error) {
         typingMessage.remove();
-        addMessage('Sorry, I encountered an error. Please try again.', false);
+        addMessage('Sorry, I encountered an unexpected error. Please try again.', false);
       }
     }
     
@@ -906,14 +927,41 @@
         const userMessage = addMessage(`I've uploaded a document:`, true);
         addDocumentCard(fileName, fileSize, userMessage);
         
-        showErrorBanner('Document upload is currently for display only. Full document analysis coming soon!');
+        showInfoBanner('Document upload is currently for display only. Full document analysis will be available in future updates!');
+      }
+    }
+    
+    // Test Cloudflare Worker connection
+    async function testWorkerConnection() {
+      try {
+        const response = await fetch(CLOUDFLARE_WORKER_URL.replace('/chat', ''), {
+          method: 'GET'
+        });
+        
+        if (response.ok) {
+          console.log('Cloudflare Worker is accessible');
+          return true;
+        }
+      } catch (error) {
+        console.warn('Cloudflare Worker test failed:', error);
+        return false;
       }
     }
     
     // Initialize chat
-    function initializeChat() {
+    async function initializeChat() {
       createNetworkBackground();
-      addMessage("Hello! I'm Hocks AI Assistant. How can I help you today?", false);
+      
+      // Test worker connection
+      const isWorkerAccessible = await testWorkerConnection();
+      
+      if (isWorkerAccessible) {
+        addMessage("Hello! I'm Hocks AI Assistant, powered by Cloudflare Workers. How can I help you today?", false);
+        showInfoBanner('Connected to Cloudflare Workers backend. Your API key is securely stored on the server.');
+      } else {
+        addMessage("Hello! I'm Hocks AI Assistant.", false);
+        showErrorBanner('Warning: Unable to connect to Cloudflare Workers. Please ensure your worker is deployed at the correct URL.');
+      }
       
       // Event listeners
       document.getElementById('sendBtn').addEventListener('click', sendMessage);
@@ -937,7 +985,7 @@
       // Add a hint for first-time users
       setTimeout(() => {
         if (conversationHistory.length === 1) {
-          addMessage("You can ask me anything! Try asking about technology, programming, or general knowledge.", false);
+          addMessage("You can ask me anything! I'm using Cloudflare Workers as a secure backend for AI processing.", false);
         }
       }, 2000);
     }
@@ -947,12 +995,20 @@
     
     // Handle offline/online status
     window.addEventListener('online', () => {
-      showErrorBanner('Connection restored! You can chat again.');
+      showInfoBanner('Connection restored! You can chat again.');
     });
     
     window.addEventListener('offline', () => {
       showErrorBanner('You are offline. Please check your internet connection.');
     });
+    
+    // Periodic connection check
+    setInterval(async () => {
+      const isWorkerAccessible = await testWorkerConnection();
+      if (!isWorkerAccessible) {
+        showErrorBanner('Lost connection to Cloudflare Workers. Some features may not work.');
+      }
+    }, 30000); // Check every 30 seconds
   </script>
  </body>
- </html>
+      </html>
