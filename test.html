@@ -744,16 +744,13 @@
         // Typical: data.choices[0].message.content
         let aiText = '';
 
-        if (data?.choices && Array.isArray(data.choices) && data.choices.length > 0) {
-          // Chat completions style
-          aiText = data.choices[0].message?.content ?? data.choices[0].text ?? JSON.stringify(data.choices[0]);
-        } else if (data?.error) {
-          throw new Error(data.error.message || JSON.stringify(data.error));
-        } else if (typeof data === 'string') {
-          aiText = data;
-        } else {
-          aiText = JSON.stringify(data).slice(0, 200);
-        }
+if (data.success) {
+  aiText = data.reply; // Worker থেকে আসা আসল reply ধরবে
+} else if (data.error) {
+  throw new Error(data.error);
+} else {
+  aiText = 'দুঃখিত, সঠিকভাবে response আসেনি।';
+                                                               }
 
         // push assistant reply to local conversation history
         conversationHistory.push({
