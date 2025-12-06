@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hocks AI - Next Generation AI Platform</title>
+    <meta name="description" content="Create, chat, and build with AI in stunning 3D environments">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollTrigger.min.js"></script>
+    <style>
+        :root {
+            --bg: #0b0f12;
+            --panel: #0f1416;
+            --accent: #16c784;
+            --accent-2: #00ff9a;
+            --muted-text: #cfeee6;
+            --bright-text: #eafef6;
+        }
+    </style>
+</head>
+<body class="bg-[var(--bg)] text-[var(--bright-text)] font-sans antialiased">
+    <custom-header></custom-header>
+    
+    <main>
+        <!-- Hero Section -->
+        <section class="min-h-screen relative overflow-hidden">
+            <div class="container mx-auto px-6 py-24 flex flex-col lg:flex-row items-center">
+                <!-- Chat Panel -->
+                <div class="lg:w-1/2 z-10 relative">
+                    <div class="bg-[var(--panel)] backdrop-blur-lg rounded-2xl p-8 border border-[var(--accent)]/20 shadow-lg shadow-[var(--accent)]/10">
+                        <div class="flex space-x-2 mb-6 overflow-x-auto pb-2">
+                            <a href="/chat" class="px-4 py-2 rounded-full bg-[var(--accent)] text-[var(--bg)] font-medium text-sm whitespace-nowrap">Chat with AI</a>
+                            <a href="/image" class="px-4 py-2 rounded-full bg-[var(--panel)] border border-[var(--accent)] text-[var(--accent)] font-medium text-sm whitespace-nowrap">Create Picture</a>
+                            <a href="/video" class="px-4 py-2 rounded-full bg-[var(--panel)] border border-[var(--accent)] text-[var(--accent)] font-medium text-sm whitespace-nowrap">Create Video</a>
+                            <a href="/app" class="px-4 py-2 rounded-full bg-[var(--panel)] border border-[var(--accent)] text-[var(--accent)] font-medium text-sm whitespace-nowrap">Create App</a>
+                            <a href="/website" class="px-4 py-2 rounded-full bg-[var(--panel)] border border-[var(--accent)] text-[var(--accent)] font-medium text-sm whitespace-nowrap">Create Website</a>
+                        </div>
+                        
+                        <h1 class="text-4xl md:text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-[var(--accent)] to-[var(--accent-2)]">
+                            The Future of AI Creation
+                        </h1>
+                        
+                        <div class="chat-container mb-6 h-64 overflow-y-auto">
+                            <div class="message system mb-4">
+                                <div class="text-[var(--muted-text)] text-sm mb-1">System</div>
+                                <div class="bg-[var(--panel)] border border-[var(--accent)]/20 rounded-lg p-3">Welcome to Hocks AI. How can I assist you today?</div>
+                            </div>
+                            <div class="message user mb-4">
+                                <div class="text-[var(--muted-text)] text-sm mb-1">You</div>
+                                <div class="bg-[var(--accent)]/10 border border-[var(--accent)]/30 rounded-lg p-3">Create a futuristic cityscape concept art</div>
+                            </div>
+                            <div class="message system">
+                                <div class="text-[var(--muted-text)] text-sm mb-1">System</div>
+                                <div class="bg-[var(--panel)] border border-[var(--accent)]/20 rounded-lg p-3">Generating concept... Here's a cyberpunk city with neon lights and flying cars. Would you like to refine it?</div>
+                            </div>
+                        </div>
+                        
+                        <div class="relative">
+                            <input type="text" placeholder="Ask Hocks AI anything..." class="w-full bg-[var(--bg)] border border-[var(--accent)]/30 rounded-full py-3 px-5 pr-12 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent">
+                            <button class="absolute right-3 top-1/2 transform -translate-y-1/2 text-[var(--accent)]">
+                                <i data-feather="send"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 3D Canvas -->
+                <div class="lg:w-1/2 h-96 lg:h-auto lg:absolute lg:right-0 lg:top-0 lg:bottom-0 w-full" id="threejs-container">
+                    <!-- Fallback image -->
+                    <img src="http://static.photos/technology/1200x630/42" alt="Hocks AI 3D Visualization" class="w-full h-full object-cover lg:hidden">
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="py-20">
+            <div class="container mx-auto px-6">
+                <h2 class="text-3xl md:text-4xl font-bold text-center mb-16">Powerful AI Features</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="feature-card">
+                        <div class="icon-box">
+                            <i data-feather="message-square"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">AI Chat</h3>
+                        <p class="text-[var(--muted-text)]">Conversational AI that understands context and remembers your preferences.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="icon-box">
+                            <i data-feather="image"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">Image Generation</h3>
+                        <p class="text-[var(--muted-text)]">Create stunning visuals from text prompts with our advanced diffusion models.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="icon-box">
+                            <i data-feather="film"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">Video Synthesis</h3>
+                        <p class="text-[var(--muted-text)]">Generate and edit videos with AI-powered tools for professionals.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="icon-box">
+                            <i data-feather="code"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">App Builder</h3>
+                        <p class="text-[var(--muted-text)]">Turn your ideas into functional applications with natural language.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="icon-box">
+                            <i data-feather="globe"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">Website Creator</h3>
+                        <p class="text-[var(--muted-text)]">Design and deploy beautiful websites in minutes with AI assistance.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="icon-box">
+                            <i data-feather="cpu"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">3D Modeling</h3>
+                        <p class="text-[var(--muted-text)]">Generate and modify 3D assets for games, VR, and product design.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- How It Works Section -->
+        <section class="py-20 bg-[var(--panel)]">
+            <div class="container mx-auto px-6">
+                <h2 class="text-3xl md:text-4xl font-bold text-center mb-16">How Hocks AI Works</h2>
+                
+                <div class="flex flex-col md:flex-row gap-12">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <h3 class="text-xl font-bold mb-3">Describe Your Vision</h3>
+                        <p class="text-[var(--muted-text)]">Tell our AI what you want to create using natural language or upload reference materials.</p>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <h3 class="text-xl font-bold mb-3">AI Generates Options</h3>
+                        <p class="text-[var(--muted-text)]">Our system processes your request and presents multiple variations for you to choose from.</p>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <h3 class="text-xl font-bold mb-3">Refine & Export</h3>
+                        <p class="text-[var(--muted-text)]">Iterate with the AI to perfect your creation, then download or deploy with one click.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="py-20">
+            <div class="container mx-auto px-6 text-center">
+                <h2 class="text-3xl md:text-4xl font-bold mb-6">Ready to Create the Future?</h2>
+                <p class="text-xl text-[var(--muted-text)] max-w-2xl mx-auto mb-10">Join thousands of creators already building with Hocks AI's powerful platform.</p>
+                <div class="flex flex-col sm:flex-row justify-center gap-4">
+                    <a href="#" class="px-8 py-4 bg-[var(--accent)] text-[var(--bg)] font-bold rounded-full hover:bg-[var(--accent-2)] transition-colors">Get Started for Free</a>
+                    <a href="#" class="px-8 py-4 border border-[var(--accent)] text-[var(--accent)] font-bold rounded-full hover:bg-[var(--accent)]/10 transition-colors">Request Demo</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <custom-footer></custom-footer>
+
+    <!-- Scripts -->
+    <script src="components/header.js"></script>
+    <script src="components/footer.js"></script>
+    <script src="script.js"></script>
+    <script>
+        feather.replace();
+        
+        // Initialize Three.js scene
+        if (document.getElementById('threejs-container')) {
+            const container = document.getElementById('threejs-container');
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            container.appendChild(renderer.domElement);
+            
+            // Add lights
+            const ambientLight = new THREE.AmbientLight(0x404040);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight.position.set(1, 1, 1);
+            scene.add(directionalLight);
+            
+            // Add object
+            const geometry = new THREE.IcosahedronGeometry(2, 0);
+            const material = new THREE.MeshStandardMaterial({ 
+                color: 0x16c784,
+                metalness: 0.7,
+                roughness: 0.2,
+                emissive: 0x00ff9a,
+                emissiveIntensity: 0.2
+            });
+            const mesh = new THREE.Mesh(geometry, material);
+            scene.add(mesh);
+            
+            camera.position.z = 5;
+            
+            // Animation loop
+            function animate() {
+                requestAnimationFrame(animate);
+                mesh.rotation.x += 0.005;
+                mesh.rotation.y += 0.01;
+                renderer.render(scene, camera);
+            }
+            
+            animate();
+            
+            // Handle resize
+            window.addEventListener('resize', () => {
+                camera.aspect = container.clientWidth / container.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(container.clientWidth, container.clientHeight);
+            });
+            
+            // Parallax effect
+            container.addEventListener('mousemove', (e) => {
+                const x = (e.clientX / window.innerWidth) * 2 - 1;
+                const y = -(e.clientY / window.innerHeight) * 2 + 1;
+                mesh.rotation.x = y * 0.2;
+                mesh.rotation.y = x * 0.2;
+            });
+        }
+        
+        // GSAP animations
+        gsap.registerPlugin(ScrollTrigger);
+        
+        gsap.from(".feature-card", {
+            scrollTrigger: {
+                trigger: ".feature-card",
+                start: "top 80%",
+                toggleActions: "play none none none"
+            },
+            y: 50,
+            opacity: 0,
+            duration: 0.8,
+            stagger: 0.1
+        });
+        
+        gsap.from(".step", {
+            scrollTrigger: {
+                trigger: ".step",
+                start: "top 80%",
+                toggleActions: "play none none none"
+            },
+            y: 50,
+            opacity: 0,
+            duration: 0.8,
+            stagger: 0.2
+        });
+    </script>
+</body>
+</html>
