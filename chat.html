@@ -309,20 +309,6 @@
       flex-shrink: 0;
     }
     
-    /* Info message */
-    .info-banner {
-      background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(29, 78, 216, 0.1));
-      border: 2px solid rgba(59, 130, 246, 0.5);
-      border-radius: 12px;
-      padding: 1rem 1.5rem;
-      margin: 1rem;
-      color: #b3d9ff;
-      display: flex;
-      align-items: center;
-      gap: 0.8rem;
-      font-size: 0.95rem;
-    }
-    
     /* Document card */
     .document-card {
       background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 204, 102, 0.05));
@@ -523,27 +509,6 @@
       30% { transform: translateY(-10px); }
     }
     
-    /* Status indicator */
-    .status-indicator {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.3rem;
-      font-size: 0.8rem;
-      padding: 0.2rem 0.5rem;
-      border-radius: 10px;
-      background: rgba(0, 255, 136, 0.1);
-      border: 1px solid rgba(0, 255, 136, 0.3);
-      margin-left: 0.5rem;
-    }
-    
-    .status-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: #00ff88;
-      animation: pulse 1.5s infinite;
-    }
-    
     /* Responsive adjustments */
     @media (max-width: 768px) {
       .chat-main {
@@ -660,16 +625,13 @@
    </div>
   </div>
   <script>
-    // 🔗 Cloudflare Workers URL
-    const CLOUDFLARE_WORKER_URL = "https://hocks-ai-backend.test125256.workers.dev";
-    
-    // 🔑 OpenAI API Key (temporary - for fallback)
-    const OPENAI_API_KEY = "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";
+    // 🔑 Bytez API Key (সরাসরি frontend এ)
+    const BYTEZ_API_KEY = "82305797e3b67912f3817334dd285ffe";
     
     let messageIdCounter = 0;
     let conversationHistory = [];
     let isProcessing = false;
-    let useDirectAPI = false; // Flag to track if we're using direct API
+    let bytezSDKLoaded = false;
     
     // Create animated background
     function createNetworkBackground() {
@@ -706,30 +668,9 @@
       chatMessages.appendChild(errorDiv);
       chatMessages.scrollTop = chatMessages.scrollHeight;
       
-      // Auto remove after 5 seconds
       setTimeout(() => {
         if (errorDiv.parentNode) {
           errorDiv.remove();
-        }
-      }, 5000);
-    }
-    
-    // Show info banner
-    function showInfoBanner(message) {
-      const chatMessages = document.getElementById('chatMessages');
-      const infoDiv = document.createElement('div');
-      infoDiv.className = 'info-banner';
-      infoDiv.innerHTML = `
-        <div class="error-banner-icon">💡</div>
-        <div>${message}</div>
-      `;
-      chatMessages.appendChild(infoDiv);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-      
-      // Auto remove after 5 seconds
-      setTimeout(() => {
-        if (infoDiv.parentNode) {
-          infoDiv.remove();
         }
       }, 5000);
     }
@@ -758,25 +699,6 @@
         bubbleDiv.appendChild(typingIndicator);
       } else {
         bubbleDiv.textContent = text;
-        
-        // Add status indicator for bot messages
-        if (!isUser) {
-          const statusSpan = document.createElement('span');
-          statusSpan.className = 'status-indicator';
-          if (useDirectAPI) {
-            statusSpan.innerHTML = `
-              <span class="status-dot" style="background: #ff9900;"></span>
-              Direct API
-            `;
-          } else {
-            statusSpan.innerHTML = `
-              <span class="status-dot"></span>
-              Cloudflare
-            `;
-          }
-          bubbleDiv.appendChild(document.createElement('br'));
-          bubbleDiv.appendChild(statusSpan);
-        }
       }
       
       messageDiv.appendChild(avatarDiv);
@@ -788,115 +710,69 @@
       return messageDiv;
     }
     
-    // Test Cloudflare Worker connection
-    async function testWorkerConnection() {
-      try {
-        const response = await fetch(CLOUDFLARE_WORKER_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            message: "test",
-            temperature: 0.7
-          })
-        });
+    // Load Bytez SDK from CDN
+    function loadBytezSDK() {
+      return new Promise((resolve, reject) => {
+        if (typeof Bytez !== 'undefined') {
+          bytezSDKLoaded = true;
+          resolve();
+          return;
+        }
         
-        return response.ok;
-      } catch (error) {
-        return false;
-      }
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/bytez.js@latest/dist/bytez.min.js';
+        script.onload = () => {
+          bytezSDKLoaded = true;
+          console.log('Bytez SDK loaded successfully');
+          resolve();
+        };
+        script.onerror = () => {
+          console.error('Failed to load Bytez SDK');
+          showErrorBanner('Failed to load AI engine. Please refresh.');
+          reject(new Error('Failed to load Bytez SDK'));
+        };
+        document.head.appendChild(script);
+      });
     }
     
-    // Call Cloudflare Worker for AI response
-    async function callOpenAI(userMessage) {
+    // Call Bytez API directly (সরাসরি frontend থেকে)
+    async function callBytezDirect(userMessage) {
+      // Add user message to history
       conversationHistory.push({
         role: 'user',
         content: userMessage
       });
       
-      // Try Cloudflare Worker first
-      if (!useDirectAPI) {
-        try {
-          const payload = {
-            message: userMessage,
-            temperature: 0.7,
-            max_tokens: 500
-          };
-          
-          const response = await fetch(CLOUDFLARE_WORKER_URL, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload)
-          });
-          
-          if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Worker Error: ${response.status} - ${errorText}`);
-          }
-          
-          const data = await response.json();
-          
-          // Extract response from different possible formats
-          let aiResponse;
-          if (data.response) {
-            aiResponse = data.response;
-          } else if (data.choices && data.choices[0] && data.choices[0].message) {
-            aiResponse = data.choices[0].message.content;
-          } else if (data.content) {
-            aiResponse = data.content;
-          } else if (typeof data === 'string') {
-            aiResponse = data;
-          } else {
-            aiResponse = JSON.stringify(data);
-          }
-          
-          conversationHistory.push({
-            role: 'assistant',
-            content: aiResponse
-          });
-          
-          if (conversationHistory.length > 20) {
-            conversationHistory = conversationHistory.slice(-20);
-          }
-          
-          return aiResponse;
-          
-        } catch (workerError) {
-          console.error('Cloudflare Worker failed:', workerError);
-          useDirectAPI = true; // Switch to direct API
-          showInfoBanner('Switched to direct OpenAI API (Cloudflare Worker not working)');
-          
-          // Fall back to direct API
-          return await callDirectOpenAI(userMessage);
-        }
-      } else {
-        // Already using direct API
-        return await callDirectOpenAI(userMessage);
-      }
-    }
-    
-    // Direct OpenAI API call (fallback)
-    async function callDirectOpenAI(userMessage) {
       try {
-        if (!OPENAI_API_KEY || OPENAI_API_KEY.trim() === '') {
-          throw new Error('OpenAI API Key is not configured.');
+        // Try Method 1: Bytez SDK
+        if (typeof Bytez !== 'undefined' || bytezSDKLoaded) {
+          try {
+            const sdk = new Bytez(BYTEZ_API_KEY);
+            const model = sdk.model("openai/gpt-5.1");
+            const { error, output } = await model.run(conversationHistory);
+            
+            if (error) throw new Error(error);
+            
+            conversationHistory.push({
+              role: 'assistant',
+              content: output
+            });
+            
+            return output;
+          } catch (sdkError) {
+            console.warn('Bytez SDK failed, trying direct API:', sdkError);
+          }
         }
         
-        // Using CORS proxy
-        const PROXY_URL = 'https://api.allorigins.win/raw?url=';
-        const API_URL = 'https://api.openai.com/v1/chat/completions';
-        
-        const response = await fetch(PROXY_URL + encodeURIComponent(API_URL), {
+        // Method 2: Direct REST API call
+        const response = await fetch('https://api.bytez.com/v1/chat/completions', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${OPENAI_API_KEY}`
+            'Authorization': `Bearer ${BYTEZ_API_KEY}`
           },
           body: JSON.stringify({
-            model: 'gpt-3.5-turbo',
+            model: 'gpt-5.1',
             messages: conversationHistory,
             temperature: 0.7,
             max_tokens: 500
@@ -905,7 +781,7 @@
         
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.error?.message || `OpenAI Error: ${response.status}`);
+          throw new Error(errorData.error?.message || `API error: ${response.status}`);
         }
         
         const data = await response.json();
@@ -916,51 +792,22 @@
           content: aiResponse
         });
         
-        if (conversationHistory.length > 20) {
-          conversationHistory = conversationHistory.slice(-20);
-        }
-        
         return aiResponse;
-      } catch (error) {
-        console.error('Direct OpenAI API Error:', error);
         
-        // Try alternative proxy
-        try {
-          const PROXY_URL = 'https://corsproxy.io/?';
-          const API_URL = 'https://api.openai.com/v1/chat/completions';
-          
-          const response = await fetch(PROXY_URL + encodeURIComponent(API_URL), {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${OPENAI_API_KEY}`
-            },
-            body: JSON.stringify({
-              model: 'gpt-3.5-turbo',
-              messages: conversationHistory,
-              temperature: 0.7,
-              max_tokens: 500
-            })
-          });
-          
-          const data = await response.json();
-          
-          if (data.error) {
-            throw new Error(data.error.message || 'Unknown error');
-          }
-          
-          const aiResponse = data.choices[0].message.content;
-          
+      } catch (error) {
+        console.error('Bytez API Error:', error);
+        
+        // Method 3: Fallback to mock response
+        if (conversationHistory.length === 1) {
+          const fallbackResponse = "I'm Hocks AI Assistant! I can help you with various questions. Try asking me something!";
           conversationHistory.push({
             role: 'assistant',
-            content: aiResponse
+            content: fallbackResponse
           });
-          
-          return aiResponse;
-        } catch (fallbackError) {
-          console.error('Fallback also failed:', fallbackError);
-          throw new Error('Unable to connect to AI service. Please check your API key or try again later.');
+          return fallbackResponse;
         }
+        
+        throw error;
       }
     }
     
@@ -969,12 +816,19 @@
       const typingMessage = addMessage('', false, true);
       
       try {
-        const aiResponse = await callOpenAI(userMessage);
+        // Keep conversation history manageable
+        if (conversationHistory.length > 6) {
+          conversationHistory = conversationHistory.slice(-6);
+        }
+        
+        const aiResponse = await callBytezDirect(userMessage);
         typingMessage.remove();
         addMessage(aiResponse, false);
       } catch (error) {
         typingMessage.remove();
-        addMessage('Sorry, I encountered an error: ' + error.message, false);
+        console.error('AI Response Error:', error);
+        addMessage('Sorry, I encountered an error. Please try again.', false);
+        showErrorBanner(`Error: ${error.message}`);
       }
     }
     
@@ -1043,7 +897,7 @@
         const userMessage = addMessage(`I've uploaded a document:`, true);
         addDocumentCard(fileName, fileSize, userMessage);
         
-        showInfoBanner('Document upload is currently for display only. Full document analysis coming soon!');
+        showErrorBanner('Document upload is for display only. AI analysis coming soon!');
       }
     }
     
@@ -1051,17 +905,12 @@
     async function initializeChat() {
       createNetworkBackground();
       
-      // Test Cloudflare Worker connection
-      const isWorkerWorking = await testWorkerConnection();
+      // Load Bytez SDK in background
+      loadBytezSDK().catch(() => {
+        console.log('Bytez SDK will load on demand');
+      });
       
-      if (isWorkerWorking) {
-        addMessage("Hello! I'm Hocks AI Assistant. How can I help you today?", false);
-        showInfoBanner('Connected to Cloudflare Workers backend.');
-      } else {
-        addMessage("Hello! I'm Hocks AI Assistant. How can I help you today?", false);
-        showInfoBanner('Cloudflare Worker not responding. Using direct OpenAI API as fallback.');
-        useDirectAPI = true;
-      }
+      addMessage("Hello! I'm Hocks AI Assistant. How can I help you today?", false);
       
       // Event listeners
       document.getElementById('sendBtn').addEventListener('click', sendMessage);
@@ -1082,10 +931,10 @@
       // Focus on input
       document.getElementById('chatInput').focus();
       
-      // Add a hint for first-time users
+      // Add a hint
       setTimeout(() => {
-        if (conversationHistory.length === 1) {
-          addMessage("You can ask me anything! Try asking about technology, programming, or general knowledge.", false);
+        if (conversationHistory.length === 0) {
+          addMessage("Ask me anything about technology, programming, or general knowledge!", false);
         }
       }, 2000);
     }
@@ -1095,7 +944,7 @@
     
     // Handle offline/online status
     window.addEventListener('online', () => {
-      showInfoBanner('Connection restored! You can chat again.');
+      showErrorBanner('Connection restored! You can chat again.');
     });
     
     window.addEventListener('offline', () => {
