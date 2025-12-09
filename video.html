@@ -625,7 +625,7 @@
    </div>
   </div>
   <script>
-    // 🔗 Netlify Backend URL - Your Bytez API Backend
+    // 🔗 Netlify Backend URL
     const BYTEZ_BACKEND_URL = 'https://stupendous-frangipane-73cdbc.netlify.app/.netlify/functions/bytez-chat';
     
     let messageIdCounter = 0;
@@ -712,6 +712,7 @@
     
     // Call Bytez API through Netlify Backend
     async function callBytezAPI(userMessage) {
+      // Add user message to history
       conversationHistory.push({
         role: 'user',
         content: userMessage
@@ -730,26 +731,28 @@
         
         const data = await response.json();
         
-        if (!response.ok) {
+        if (!response.ok || !data.success) {
+          console.error('API Error:', data);
           throw new Error(data.error || 'Request failed');
         }
         
-        const aiResponse = data.response;
-        
+        // Add AI response to history
         conversationHistory.push({
           role: 'assistant',
-          content: aiResponse
+          content: data.response
         });
         
-        if (conversationHistory.length > 20) {
-          conversationHistory = conversationHistory.slice(-20);
+        // Keep only last 10 messages to avoid token limit
+        if (conversationHistory.length > 10) {
+          conversationHistory = conversationHistory.slice(-10);
         }
         
-        return aiResponse;
+        return data.response;
+        
       } catch (error) {
         console.error('Bytez API Error:', error);
         showErrorBanner(`Error: ${error.message}`);
-        return 'Sorry, I am having trouble connecting to the AI service. Please try again.';
+        return null;
       }
     }
     
@@ -760,7 +763,12 @@
       try {
         const aiResponse = await callBytezAPI(userMessage);
         typingMessage.remove();
-        addMessage(aiResponse, false);
+        
+        if (aiResponse) {
+          addMessage(aiResponse, false);
+        } else {
+          addMessage('Sorry, I encountered an error. Please try again.', false);
+        }
       } catch (error) {
         typingMessage.remove();
         addMessage('Sorry, I encountered an error. Please try again.', false);
@@ -862,7 +870,7 @@
       
       // Add a hint for first-time users
       setTimeout(() => {
-        if (conversationHistory.length === 1) {
+        if (conversationHistory.length === 0) {
           addMessage("You can ask me anything! Try asking about technology, programming, or general knowledge.", false);
         }
       }, 2000);
@@ -881,4 +889,4 @@
     });
   </script>
  </body>
-</html>
+ </html>
