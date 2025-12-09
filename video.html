@@ -1,272 +1,884 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hocks AI - Next Generation AI Platform</title>
-    <meta name="description" content="Create, chat, and build with AI in stunning 3D environments">
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
-    <script src="https://unpkg.com/feather-icons"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollTrigger.min.js"></script>
-    <style>
-        :root {
-            --bg: #0b0f12;
-            --panel: #0f1416;
-            --accent: #16c784;
-            --accent-2: #00ff9a;
-            --muted-text: #cfeee6;
-            --bright-text: #eafef6;
-        }
-    </style>
-</head>
-<body class="bg-[var(--bg)] text-[var(--bright-text)] font-sans antialiased">
-    <custom-header></custom-header>
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Chatbot - Hocks</title>
+  <style>
+    body {
+      box-sizing: border-box;
+    }
     
-    <main>
-        <!-- Hero Section -->
-        <section class="min-h-screen relative overflow-hidden">
-            <div class="container mx-auto px-6 py-24 flex flex-col lg:flex-row items-center">
-                <!-- Chat Panel -->
-                <div class="lg:w-1/2 z-10 relative">
-                    <div class="bg-[var(--panel)] backdrop-blur-lg rounded-2xl p-8 border border-[var(--accent)]/20 shadow-lg shadow-[var(--accent)]/10">
-                        <div class="flex space-x-2 mb-6 overflow-x-auto pb-2">
-                            <a href="/chat" class="px-4 py-2 rounded-full bg-[var(--accent)] text-[var(--bg)] font-medium text-sm whitespace-nowrap">Chat with AI</a>
-                            <a href="/image" class="px-4 py-2 rounded-full bg-[var(--panel)] border border-[var(--accent)] text-[var(--accent)] font-medium text-sm whitespace-nowrap">Create Picture</a>
-                            <a href="/video" class="px-4 py-2 rounded-full bg-[var(--panel)] border border-[var(--accent)] text-[var(--accent)] font-medium text-sm whitespace-nowrap">Create Video</a>
-                            <a href="/app" class="px-4 py-2 rounded-full bg-[var(--panel)] border border-[var(--accent)] text-[var(--accent)] font-medium text-sm whitespace-nowrap">Create App</a>
-                            <a href="/website" class="px-4 py-2 rounded-full bg-[var(--panel)] border border-[var(--accent)] text-[var(--accent)] font-medium text-sm whitespace-nowrap">Create Website</a>
-                        </div>
-                        
-                        <h1 class="text-4xl md:text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-[var(--accent)] to-[var(--accent-2)]">
-                            The Future of AI Creation
-                        </h1>
-                        
-                        <div class="chat-container mb-6 h-64 overflow-y-auto">
-                            <div class="message system mb-4">
-                                <div class="text-[var(--muted-text)] text-sm mb-1">System</div>
-                                <div class="bg-[var(--panel)] border border-[var(--accent)]/20 rounded-lg p-3">Welcome to Hocks AI. How can I assist you today?</div>
-                            </div>
-                            <div class="message user mb-4">
-                                <div class="text-[var(--muted-text)] text-sm mb-1">You</div>
-                                <div class="bg-[var(--accent)]/10 border border-[var(--accent)]/30 rounded-lg p-3">Create a futuristic cityscape concept art</div>
-                            </div>
-                            <div class="message system">
-                                <div class="text-[var(--muted-text)] text-sm mb-1">System</div>
-                                <div class="bg-[var(--panel)] border border-[var(--accent)]/20 rounded-lg p-3">Generating concept... Here's a cyberpunk city with neon lights and flying cars. Would you like to refine it?</div>
-                            </div>
-                        </div>
-                        
-                        <div class="relative">
-                            <input type="text" placeholder="Ask Hocks AI anything..." class="w-full bg-[var(--bg)] border border-[var(--accent)]/30 rounded-full py-3 px-5 pr-12 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent">
-                            <button class="absolute right-3 top-1/2 transform -translate-y-1/2 text-[var(--accent)]">
-                                <i data-feather="send"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 3D Canvas -->
-                <div class="lg:w-1/2 h-96 lg:h-auto lg:absolute lg:right-0 lg:top-0 lg:bottom-0 w-full" id="threejs-container">
-                    <!-- Fallback image -->
-                    <img src="http://static.photos/technology/1200x630/42" alt="Hocks AI 3D Visualization" class="w-full h-full object-cover lg:hidden">
-                </div>
-            </div>
-        </section>
-
-        <!-- Features Section -->
-        <section class="py-20">
-            <div class="container mx-auto px-6">
-                <h2 class="text-3xl md:text-4xl font-bold text-center mb-16">Powerful AI Features</h2>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <div class="feature-card">
-                        <div class="icon-box">
-                            <i data-feather="message-square"></i>
-                        </div>
-                        <h3 class="text-xl font-bold mb-3">AI Chat</h3>
-                        <p class="text-[var(--muted-text)]">Conversational AI that understands context and remembers your preferences.</p>
-                    </div>
-                    
-                    <div class="feature-card">
-                        <div class="icon-box">
-                            <i data-feather="image"></i>
-                        </div>
-                        <h3 class="text-xl font-bold mb-3">Image Generation</h3>
-                        <p class="text-[var(--muted-text)]">Create stunning visuals from text prompts with our advanced diffusion models.</p>
-                    </div>
-                    
-                    <div class="feature-card">
-                        <div class="icon-box">
-                            <i data-feather="film"></i>
-                        </div>
-                        <h3 class="text-xl font-bold mb-3">Video Synthesis</h3>
-                        <p class="text-[var(--muted-text)]">Generate and edit videos with AI-powered tools for professionals.</p>
-                    </div>
-                    
-                    <div class="feature-card">
-                        <div class="icon-box">
-                            <i data-feather="code"></i>
-                        </div>
-                        <h3 class="text-xl font-bold mb-3">App Builder</h3>
-                        <p class="text-[var(--muted-text)]">Turn your ideas into functional applications with natural language.</p>
-                    </div>
-                    
-                    <div class="feature-card">
-                        <div class="icon-box">
-                            <i data-feather="globe"></i>
-                        </div>
-                        <h3 class="text-xl font-bold mb-3">Website Creator</h3>
-                        <p class="text-[var(--muted-text)]">Design and deploy beautiful websites in minutes with AI assistance.</p>
-                    </div>
-                    
-                    <div class="feature-card">
-                        <div class="icon-box">
-                            <i data-feather="cpu"></i>
-                        </div>
-                        <h3 class="text-xl font-bold mb-3">3D Modeling</h3>
-                        <p class="text-[var(--muted-text)]">Generate and modify 3D assets for games, VR, and product design.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- How It Works Section -->
-        <section class="py-20 bg-[var(--panel)]">
-            <div class="container mx-auto px-6">
-                <h2 class="text-3xl md:text-4xl font-bold text-center mb-16">How Hocks AI Works</h2>
-                
-                <div class="flex flex-col md:flex-row gap-12">
-                    <div class="step">
-                        <div class="step-number">1</div>
-                        <h3 class="text-xl font-bold mb-3">Describe Your Vision</h3>
-                        <p class="text-[var(--muted-text)]">Tell our AI what you want to create using natural language or upload reference materials.</p>
-                    </div>
-                    
-                    <div class="step">
-                        <div class="step-number">2</div>
-                        <h3 class="text-xl font-bold mb-3">AI Generates Options</h3>
-                        <p class="text-[var(--muted-text)]">Our system processes your request and presents multiple variations for you to choose from.</p>
-                    </div>
-                    
-                    <div class="step">
-                        <div class="step-number">3</div>
-                        <h3 class="text-xl font-bold mb-3">Refine & Export</h3>
-                        <p class="text-[var(--muted-text)]">Iterate with the AI to perfect your creation, then download or deploy with one click.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- CTA Section -->
-        <section class="py-20">
-            <div class="container mx-auto px-6 text-center">
-                <h2 class="text-3xl md:text-4xl font-bold mb-6">Ready to Create the Future?</h2>
-                <p class="text-xl text-[var(--muted-text)] max-w-2xl mx-auto mb-10">Join thousands of creators already building with Hocks AI's powerful platform.</p>
-                <div class="flex flex-col sm:flex-row justify-center gap-4">
-                    <a href="#" class="px-8 py-4 bg-[var(--accent)] text-[var(--bg)] font-bold rounded-full hover:bg-[var(--accent-2)] transition-colors">Get Started for Free</a>
-                    <a href="#" class="px-8 py-4 border border-[var(--accent)] text-[var(--accent)] font-bold rounded-full hover:bg-[var(--accent)]/10 transition-colors">Request Demo</a>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <custom-footer></custom-footer>
-
-    <!-- Scripts -->
-    <script src="components/header.js"></script>
-    <script src="components/footer.js"></script>
-    <script src="script.js"></script>
-    <script>
-        feather.replace();
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    html, body {
+      width: 100%;
+      height: 100%;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      overflow: hidden;
+    }
+    
+    .app-container {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    /* Animated background network */
+    .network-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0.15;
+      pointer-events: none;
+    }
+    
+    .network-line {
+      position: absolute;
+      background: linear-gradient(90deg, transparent, #00ff88, transparent);
+      height: 1px;
+      animation: networkFlow 8s linear infinite;
+    }
+    
+    @keyframes networkFlow {
+      0% { transform: translateX(-100%) translateY(0); opacity: 0; }
+      50% { opacity: 1; }
+      100% { transform: translateX(200%) translateY(20px); opacity: 0; }
+    }
+    
+    /* Floating particles */
+    .particle {
+      position: absolute;
+      width: 3px;
+      height: 3px;
+      background: #00ff88;
+      border-radius: 50%;
+      opacity: 0.6;
+      animation: float 15s infinite ease-in-out;
+      box-shadow: 0 0 10px #00ff88;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      25% { transform: translate(50px, -30px) scale(1.2); }
+      50% { transform: translate(-30px, -60px) scale(0.8); }
+      75% { transform: translate(30px, -40px) scale(1.1); }
+    }
+    
+    /* Main chat container */
+    .chat-main {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      position: relative;
+      z-index: 1;
+    }
+    
+    /* Chatbot avatar */
+    .chatbot-avatar {
+      width: 120px;
+      height: 120px;
+      margin-bottom: 2rem;
+      position: relative;
+      transform-style: preserve-3d;
+      animation: avatarFloat 3s ease-in-out infinite;
+    }
+    
+    @keyframes avatarFloat {
+      0%, 100% { transform: translateY(0) rotateY(0deg); }
+      50% { transform: translateY(-10px) rotateY(5deg); }
+    }
+    
+    .avatar-core {
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle, #00ff88 0%, #00cc66 50%, #008844 100%);
+      border-radius: 50%;
+      box-shadow: 0 0 40px #00ff88, 0 0 80px rgba(0, 255, 136, 0.5), inset 0 0 30px rgba(255, 255, 255, 0.2);
+      position: relative;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 40px #00ff88, 0 0 80px rgba(0, 255, 136, 0.5); }
+      50% { transform: scale(1.05); box-shadow: 0 0 60px #00ff88, 0 0 120px rgba(0, 255, 136, 0.7); }
+    }
+    
+    .avatar-ring {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 140px;
+      height: 140px;
+      border: 2px solid rgba(0, 255, 136, 0.3);
+      border-radius: 50%;
+      animation: rotate 10s linear infinite;
+    }
+    
+    @keyframes rotate {
+      from { transform: translate(-50%, -50%) rotate(0deg); }
+      to { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+    
+    /* Chat window */
+    .chat-window {
+      width: 100%;
+      max-width: 800px;
+      height: 60%;
+      background: rgba(20, 20, 20, 0.8);
+      border: 2px solid rgba(0, 255, 136, 0.3);
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(0, 255, 136, 0.1), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+      transform: perspective(1000px) rotateX(2deg);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+    
+    .chat-window::before,
+    .chat-window::after {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #00ff88;
+      z-index: 10;
+      pointer-events: none;
+    }
+    
+    .chat-window::before {
+      top: -1px;
+      left: -1px;
+      border-right: none;
+      border-bottom: none;
+      border-radius: 20px 0 0 0;
+    }
+    
+    .chat-window::after {
+      bottom: -1px;
+      right: -1px;
+      border-left: none;
+      border-top: none;
+      border-radius: 0 0 20px 0;
+    }
+    
+    /* Chat messages area */
+    .chat-messages {
+      flex: 1;
+      padding: 1.5rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      scroll-behavior: smooth;
+    }
+    
+    .chat-messages::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    .chat-messages::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+    }
+    
+    .chat-messages::-webkit-scrollbar-thumb {
+      background: rgba(0, 255, 136, 0.4);
+      border-radius: 10px;
+    }
+    
+    .chat-messages::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 255, 136, 0.6);
+    }
+    
+    /* Message bubbles */
+    .message {
+      display: flex;
+      gap: 0.8rem;
+      animation: slideIn 0.4s ease-out;
+      transform-style: preserve-3d;
+    }
+    
+    @keyframes slideIn {
+      from { 
+        opacity: 0; 
+        transform: translateY(20px) translateZ(-20px);
+      }
+      to { 
+        opacity: 1; 
+        transform: translateY(0) translateZ(0);
+      }
+    }
+    
+    .message.user {
+      flex-direction: row-reverse;
+    }
+    
+    .message-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+    
+    .message.bot .message-avatar {
+      background: radial-gradient(circle, #00ff88, #00cc66);
+      box-shadow: 0 4px 12px rgba(0, 255, 136, 0.6);
+    }
+    
+    .message.user .message-avatar {
+      background: radial-gradient(circle, #4a9eff, #2563eb);
+      box-shadow: 0 4px 12px rgba(74, 158, 255, 0.6);
+    }
+    
+    .message-bubble {
+      max-width: 70%;
+      padding: 1rem 1.3rem;
+      border-radius: 18px;
+      position: relative;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+      transform: translateZ(10px);
+      word-wrap: break-word;
+      white-space: pre-wrap;
+    }
+    
+    .message.bot .message-bubble {
+      background: linear-gradient(135deg, rgba(0, 255, 136, 0.15), rgba(0, 204, 102, 0.1));
+      border: 1px solid rgba(0, 255, 136, 0.4);
+      color: #e0e0e0;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .message.bot .message-bubble::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(0, 255, 136, 0.1), transparent 70%);
+      animation: shimmer 3s ease-in-out infinite;
+      pointer-events: none;
+    }
+    
+    @keyframes shimmer {
+      0%, 100% { transform: translate(0, 0); opacity: 0; }
+      50% { transform: translate(10%, 10%); opacity: 1; }
+    }
+    
+    .message.user .message-bubble {
+      background: linear-gradient(135deg, rgba(74, 158, 255, 0.15), rgba(37, 99, 235, 0.1));
+      border: 1px solid rgba(74, 158, 255, 0.4);
+      color: #e0e0e0;
+      position: relative;
+    }
+    
+    /* Error message */
+    .error-banner {
+      background: linear-gradient(135deg, rgba(255, 68, 68, 0.2), rgba(220, 38, 38, 0.1));
+      border: 2px solid rgba(255, 68, 68, 0.5);
+      border-radius: 12px;
+      padding: 1rem 1.5rem;
+      margin: 1rem;
+      color: #ffb3b3;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      font-size: 0.95rem;
+    }
+    
+    .error-banner-icon {
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+    
+    /* Document card */
+    .document-card {
+      background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 204, 102, 0.05));
+      border: 2px solid rgba(0, 255, 136, 0.4);
+      border-radius: 12px;
+      padding: 1rem;
+      margin-top: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      transform: perspective(500px) rotateX(2deg);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 255, 136, 0.2);
+    }
+    
+    .document-card:hover {
+      transform: perspective(500px) rotateX(0deg) translateY(-4px);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6), 0 0 30px rgba(0, 255, 136, 0.4);
+      border-color: rgba(0, 255, 136, 0.8);
+    }
+    
+    .document-icon {
+      width: 40px;
+      height: 40px;
+      background: rgba(0, 255, 136, 0.2);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+    
+    .document-info {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .document-name {
+      font-weight: 600;
+      color: #00ff88;
+      margin-bottom: 0.2rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .document-size {
+      font-size: 0.85rem;
+      color: #888;
+    }
+    
+    /* Chat input area */
+    .chat-input-area {
+      padding: 1.5rem;
+      background: rgba(15, 15, 15, 0.9);
+      border-top: 1px solid rgba(0, 255, 136, 0.2);
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      position: relative;
+    }
+    
+    .chat-input-area::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #00ff88, transparent);
+      opacity: 0.5;
+    }
+    
+    .file-upload-btn {
+      width: 50px;
+      height: 50px;
+      background: linear-gradient(135deg, rgba(0, 255, 136, 0.2), rgba(0, 204, 102, 0.1));
+      border: 2px solid rgba(0, 255, 136, 0.4);
+      border-radius: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      transition: all 0.3s ease;
+      flex-shrink: 0;
+      transform: translateZ(5px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    }
+    
+    .file-upload-btn:hover {
+      background: linear-gradient(135deg, rgba(0, 255, 136, 0.3), rgba(0, 204, 102, 0.2));
+      border-color: rgba(0, 255, 136, 0.8);
+      transform: translateZ(8px) scale(1.05);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 255, 136, 0.4);
+    }
+    
+    .file-upload-input {
+      display: none;
+    }
+    
+    .chat-input-wrapper {
+      flex: 1;
+      position: relative;
+    }
+    
+    .chat-input {
+      width: 100%;
+      padding: 1rem 1.5rem;
+      background: rgba(30, 30, 30, 0.8);
+      border: 2px solid rgba(0, 255, 136, 0.3);
+      border-radius: 25px;
+      color: #e0e0e0;
+      font-size: 1rem;
+      outline: none;
+      transition: all 0.3s ease;
+      box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.4);
+    }
+    
+    .chat-input:focus {
+      border-color: rgba(0, 255, 136, 0.8);
+      box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 255, 136, 0.3);
+      background: rgba(35, 35, 35, 0.9);
+    }
+    
+    .chat-input:hover {
+      border-color: rgba(0, 255, 136, 0.5);
+    }
+    
+    .chat-input:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .send-btn {
+      width: 50px;
+      height: 50px;
+      background: linear-gradient(135deg, #00ff88, #00cc66);
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: #000;
+      transition: all 0.3s ease;
+      flex-shrink: 0;
+      transform: translateZ(5px);
+      box-shadow: 0 4px 15px rgba(0, 255, 136, 0.6);
+    }
+    
+    .send-btn:hover:not(:disabled) {
+      transform: translateZ(8px) scale(1.1);
+      box-shadow: 0 6px 20px rgba(0, 255, 136, 0.8);
+    }
+    
+    .send-btn:active:not(:disabled) {
+      transform: translateZ(5px) scale(0.95);
+    }
+    
+    .send-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    /* Typing indicator */
+    .typing-indicator {
+      display: flex;
+      gap: 0.3rem;
+      padding: 0.8rem 1.2rem;
+      background: linear-gradient(135deg, rgba(0, 255, 136, 0.15), rgba(0, 204, 102, 0.1));
+      border: 1px solid rgba(0, 255, 136, 0.4);
+      border-radius: 18px;
+      width: fit-content;
+    }
+    
+    .typing-dot {
+      width: 8px;
+      height: 8px;
+      background: #00ff88;
+      border-radius: 50%;
+      animation: typingBounce 1.4s infinite;
+    }
+    
+    .typing-dot:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+    
+    .typing-dot:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+    
+    @keyframes typingBounce {
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-10px); }
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .chat-main {
+        padding: 1rem;
+      }
+      
+      .chatbot-avatar {
+        width: 80px;
+        height: 80px;
+        margin-bottom: 1rem;
+      }
+      
+      .avatar-ring {
+        width: 100px;
+        height: 100px;
+      }
+      
+      .chat-window {
+        max-width: 100%;
+        height: 70%;
+        border-radius: 15px;
+      }
+      
+      .message-bubble {
+        max-width: 85%;
+        padding: 0.8rem 1rem;
+      }
+      
+      .chat-input-area {
+        padding: 1rem;
+      }
+      
+      .file-upload-btn, .send-btn {
+        width: 45px;
+        height: 45px;
+      }
+      
+      .send-btn {
+        font-size: 1.3rem;
+      }
+      
+      .chat-input {
+        font-size: 0.95rem;
+        padding: 0.9rem 1.2rem;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .chatbot-avatar {
+        width: 70px;
+        height: 70px;
+        margin-bottom: 0.8rem;
+      }
+      
+      .avatar-ring {
+        width: 90px;
+        height: 90px;
+      }
+      
+      .chat-window {
+        border-radius: 12px;
+      }
+      
+      .message-avatar {
+        width: 32px;
+        height: 32px;
+      }
+      
+      .message-bubble {
+        padding: 0.7rem 0.9rem;
+        font-size: 0.95rem;
+      }
+      
+      .document-card {
+        padding: 0.8rem;
+      }
+      
+      .file-upload-btn, .send-btn {
+        width: 40px;
+        height: 40px;
+      }
+      
+      .send-btn {
+        font-size: 1.2rem;
+      }
+      
+      .chat-input {
+        font-size: 0.9rem;
+        padding: 0.8rem 1rem;
+      }
+    }
+  </style>
+ </head>
+ <body>
+  <div class="app-container">
+   <div class="network-bg" id="networkBg"></div>
+   <div class="chat-main">
+    <div class="chatbot-avatar">
+     <div class="avatar-core"></div>
+     <div class="avatar-ring"></div>
+    </div>
+    <div class="chat-window">
+     <div class="chat-messages" id="chatMessages">
+     </div>
+     <div class="chat-input-area">
+      <label for="fileUpload" class="file-upload-btn" title="Upload Document"> 📎 </label>
+      <input type="file" id="fileUpload" class="file-upload-input" accept=".pdf,.txt,.docx">
+      <div class="chat-input-wrapper">
+       <input type="text" class="chat-input" id="chatInput" placeholder="Type your message here..." autocomplete="off">
+      </div>
+      <button class="send-btn" id="sendBtn" title="Send Message"> ➤ </button>
+     </div>
+    </div>
+   </div>
+  </div>
+  <script>
+    // 🔗 Netlify Backend URL - Your Bytez API Backend
+    const BYTEZ_BACKEND_URL = 'https://stupendous-frangipane-73cdbc.netlify.app/.netlify/functions/bytez-chat';
+    
+    let messageIdCounter = 0;
+    let conversationHistory = [];
+    let isProcessing = false;
+    
+    // Create animated background
+    function createNetworkBackground() {
+      const networkBg = document.getElementById('networkBg');
+      
+      for (let i = 0; i < 8; i++) {
+        const line = document.createElement('div');
+        line.className = 'network-line';
+        line.style.top = `${Math.random() * 100}%`;
+        line.style.width = `${30 + Math.random() * 40}%`;
+        line.style.animationDelay = `${Math.random() * 8}s`;
+        networkBg.appendChild(line);
+      }
+      
+      for (let i = 0; i < 15; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = `${Math.random() * 100}%`;
+        particle.style.top = `${Math.random() * 100}%`;
+        particle.style.animationDelay = `${Math.random() * 15}s`;
+        networkBg.appendChild(particle);
+      }
+    }
+    
+    // Show error banner
+    function showErrorBanner(message) {
+      const chatMessages = document.getElementById('chatMessages');
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'error-banner';
+      errorDiv.innerHTML = `
+        <div class="error-banner-icon">⚠️</div>
+        <div>${message}</div>
+      `;
+      chatMessages.appendChild(errorDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      
+      // Auto remove after 5 seconds
+      setTimeout(() => {
+        if (errorDiv.parentNode) {
+          errorDiv.remove();
+        }
+      }, 5000);
+    }
+    
+    // Add a message to the chat
+    function addMessage(text, isUser = false, isTyping = false) {
+      const chatMessages = document.getElementById('chatMessages');
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+      messageDiv.dataset.messageId = messageIdCounter++;
+      
+      const avatarDiv = document.createElement('div');
+      avatarDiv.className = 'message-avatar';
+      
+      const bubbleDiv = document.createElement('div');
+      bubbleDiv.className = 'message-bubble';
+      
+      if (isTyping) {
+        const typingIndicator = document.createElement('div');
+        typingIndicator.className = 'typing-indicator';
+        for (let i = 0; i < 3; i++) {
+          const dot = document.createElement('div');
+          dot.className = 'typing-dot';
+          typingIndicator.appendChild(dot);
+        }
+        bubbleDiv.appendChild(typingIndicator);
+      } else {
+        bubbleDiv.textContent = text;
+      }
+      
+      messageDiv.appendChild(avatarDiv);
+      messageDiv.appendChild(bubbleDiv);
+      chatMessages.appendChild(messageDiv);
+      
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      
+      return messageDiv;
+    }
+    
+    // Call Bytez API through Netlify Backend
+    async function callBytezAPI(userMessage) {
+      conversationHistory.push({
+        role: 'user',
+        content: userMessage
+      });
+      
+      try {
+        const response = await fetch(BYTEZ_BACKEND_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            messages: conversationHistory
+          })
+        });
         
-        // Initialize Three.js scene
-        if (document.getElementById('threejs-container')) {
-            const container = document.getElementById('threejs-container');
-            const scene = new THREE.Scene();
-            const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
-            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-            
-            renderer.setSize(container.clientWidth, container.clientHeight);
-            container.appendChild(renderer.domElement);
-            
-            // Add lights
-            const ambientLight = new THREE.AmbientLight(0x404040);
-            scene.add(ambientLight);
-            
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-            directionalLight.position.set(1, 1, 1);
-            scene.add(directionalLight);
-            
-            // Add object
-            const geometry = new THREE.IcosahedronGeometry(2, 0);
-            const material = new THREE.MeshStandardMaterial({ 
-                color: 0x16c784,
-                metalness: 0.7,
-                roughness: 0.2,
-                emissive: 0x00ff9a,
-                emissiveIntensity: 0.2
-            });
-            const mesh = new THREE.Mesh(geometry, material);
-            scene.add(mesh);
-            
-            camera.position.z = 5;
-            
-            // Animation loop
-            function animate() {
-                requestAnimationFrame(animate);
-                mesh.rotation.x += 0.005;
-                mesh.rotation.y += 0.01;
-                renderer.render(scene, camera);
-            }
-            
-            animate();
-            
-            // Handle resize
-            window.addEventListener('resize', () => {
-                camera.aspect = container.clientWidth / container.clientHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(container.clientWidth, container.clientHeight);
-            });
-            
-            // Parallax effect
-            container.addEventListener('mousemove', (e) => {
-                const x = (e.clientX / window.innerWidth) * 2 - 1;
-                const y = -(e.clientY / window.innerHeight) * 2 + 1;
-                mesh.rotation.x = y * 0.2;
-                mesh.rotation.y = x * 0.2;
-            });
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.error || 'Request failed');
         }
         
-        // GSAP animations
-        gsap.registerPlugin(ScrollTrigger);
+        const aiResponse = data.response;
         
-        gsap.from(".feature-card", {
-            scrollTrigger: {
-                trigger: ".feature-card",
-                start: "top 80%",
-                toggleActions: "play none none none"
-            },
-            y: 50,
-            opacity: 0,
-            duration: 0.8,
-            stagger: 0.1
+        conversationHistory.push({
+          role: 'assistant',
+          content: aiResponse
         });
         
-        gsap.from(".step", {
-            scrollTrigger: {
-                trigger: ".step",
-                start: "top 80%",
-                toggleActions: "play none none none"
-            },
-            y: 50,
-            opacity: 0,
-            duration: 0.8,
-            stagger: 0.2
-        });
-    </script>
-</body>
+        if (conversationHistory.length > 20) {
+          conversationHistory = conversationHistory.slice(-20);
+        }
+        
+        return aiResponse;
+      } catch (error) {
+        console.error('Bytez API Error:', error);
+        showErrorBanner(`Error: ${error.message}`);
+        return 'Sorry, I am having trouble connecting to the AI service. Please try again.';
+      }
+    }
+    
+    // Handle AI response
+    async function handleAIResponse(userMessage) {
+      const typingMessage = addMessage('', false, true);
+      
+      try {
+        const aiResponse = await callBytezAPI(userMessage);
+        typingMessage.remove();
+        addMessage(aiResponse, false);
+      } catch (error) {
+        typingMessage.remove();
+        addMessage('Sorry, I encountered an error. Please try again.', false);
+      }
+    }
+    
+    // Add document card to message
+    function addDocumentCard(fileName, fileSize, parentMessage) {
+      const bubbleDiv = parentMessage.querySelector('.message-bubble');
+      
+      const docCard = document.createElement('div');
+      docCard.className = 'document-card';
+      
+      const docIcon = document.createElement('div');
+      docIcon.className = 'document-icon';
+      docIcon.textContent = '📄';
+      
+      const docInfo = document.createElement('div');
+      docInfo.className = 'document-info';
+      
+      const docName = document.createElement('div');
+      docName.className = 'document-name';
+      docName.textContent = fileName;
+      
+      const docSize = document.createElement('div');
+      docSize.className = 'document-size';
+      docSize.textContent = fileSize;
+      
+      docInfo.appendChild(docName);
+      docInfo.appendChild(docSize);
+      
+      docCard.appendChild(docIcon);
+      docCard.appendChild(docInfo);
+      
+      bubbleDiv.appendChild(docCard);
+    }
+    
+    // Handle send message
+    async function sendMessage() {
+      if (isProcessing) return;
+      
+      const chatInput = document.getElementById('chatInput');
+      const sendBtn = document.getElementById('sendBtn');
+      const message = chatInput.value.trim();
+      
+      if (message) {
+        isProcessing = true;
+        chatInput.disabled = true;
+        sendBtn.disabled = true;
+        
+        addMessage(message, true);
+        chatInput.value = '';
+        
+        await handleAIResponse(message);
+        
+        isProcessing = false;
+        chatInput.disabled = false;
+        sendBtn.disabled = false;
+        chatInput.focus();
+      }
+    }
+    
+    // Handle file upload
+    function handleFileUpload(file) {
+      if (file) {
+        const fileName = file.name;
+        const fileSize = (file.size / 1024).toFixed(2) + ' KB';
+        
+        const userMessage = addMessage(`I've uploaded a document:`, true);
+        addDocumentCard(fileName, fileSize, userMessage);
+        
+        showErrorBanner('Document upload is currently for display only. Full document analysis coming soon!');
+      }
+    }
+    
+    // Initialize chat
+    function initializeChat() {
+      createNetworkBackground();
+      addMessage("Hello! I'm Hocks AI Assistant. How can I help you today?", false);
+      
+      // Event listeners
+      document.getElementById('sendBtn').addEventListener('click', sendMessage);
+      
+      document.getElementById('chatInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !isProcessing) {
+          sendMessage();
+        }
+      });
+      
+      document.getElementById('fileUpload').addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+          handleFileUpload(e.target.files[0]);
+          e.target.value = '';
+        }
+      });
+      
+      // Focus on input
+      document.getElementById('chatInput').focus();
+      
+      // Add a hint for first-time users
+      setTimeout(() => {
+        if (conversationHistory.length === 1) {
+          addMessage("You can ask me anything! Try asking about technology, programming, or general knowledge.", false);
+        }
+      }, 2000);
+    }
+    
+    // Start when page loads
+    window.addEventListener('DOMContentLoaded', initializeChat);
+    
+    // Handle offline/online status
+    window.addEventListener('online', () => {
+      showErrorBanner('Connection restored! You can chat again.');
+    });
+    
+    window.addEventListener('offline', () => {
+      showErrorBanner('You are offline. Please check your internet connection.');
+    });
+  </script>
+ </body>
 </html>
