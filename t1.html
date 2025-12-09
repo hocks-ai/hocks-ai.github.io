@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Netlify Function</title>
+</head>
+<body>
+    <h2>Test Bytez Function</h2>
+    <button onclick="testFunction()">Test Function</button>
+    <div id="result" style="margin-top:20px; padding:10px; background:#f0f0f0;"></div>
+
+    <script>
+    function testFunction() {
+        const url = 'https://stupendous-frangipane-73cdbc.netlify.app/.netlify/functions/bytez-chat';
+        
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                messages: [
+                    {role: 'user', content: 'Hello from test'}
+                ]
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('result').innerHTML = 
+                '<h3>Response:</h3><pre>' + JSON.stringify(data, null, 2) + '</pre>';
+        })
+        .catch(error => {
+            document.getElementById('result').innerHTML = 
+                '<h3 style="color:red">Error:</h3><pre>' + error + '</pre>';
+        });
+    }
+    </script>
+</body>
+</html>
