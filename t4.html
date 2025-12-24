@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>T4 Codehouse | Web Development Company</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      background-color: #000;
+      color: #fff;
+      overflow-x: hidden;
+    }
+
+    header {
+      text-align: center;
+      padding: 100px 20px;
+      background: linear-gradient(180deg, #000 0%, #111 100%);
+    }
+
+    header h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+    }
+
+    header h2 {
+      font-size: 1.2rem;
+      margin-top: 10px;
+      color: #ccc;
+    }
+
+    .highlight {
+      color: #4CAF50;
+      font-weight: 700;
+    }
+
+    .services {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 60px 20px;
+      background-color: #0a0a0a;
+    }
+
+    .service-card {
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 10px;
+      width: 300px;
+      margin: 20px;
+      padding: 30px;
+      text-align: center;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .service-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 10px 20px rgba(76, 175, 80, 0.3);
+    }
+
+    .service-card h3 {
+      color: #4CAF50;
+      margin-bottom: 15px;
+    }
+
+    .service-card p {
+      color: #ccc;
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    .contact {
+      background-color: #000;
+      text-align: center;
+      padding: 60px 20px;
+    }
+
+    .contact h2 {
+      color: #4CAF50;
+      margin-bottom: 20px;
+    }
+
+    .contact p {
+      color: #ccc;
+      margin: 5px 0;
+    }
+
+    footer {
+      background-color: #111;
+      text-align: center;
+      padding: 20px;
+      color: #777;
+      font-size: 0.9rem;
+    }
+
+    /* 3D Text Effect */
+    .threeD {
+      font-size: 3rem;
+      font-weight: 900;
+      color: #fff;
+      text-shadow: 2px 2px 0 #4CAF50, 4px 4px 0 #333;
+    }
+
+    @media (max-width: 768px) {
+      .service-card {
+        width: 90%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 class="threeD">Build Your Website with <span class="highlight">T4</span> Codehouse</h1>
+    <h2>Professional Web Development & Design Services</h2>
+  </header>
+
+  <section class="services">
+    <div class="service-card">
+      <h3>Website Design & Development</h3>
+      <p>We create beautiful, user-friendly, and responsive websites optimized for search engines and user experience.</p>
+    </div>
+    <div class="service-card">
+      <h3>E-commerce Development</h3>
+      <p>Build your online store with secure payment processing, product management, and shipping integration.</p>
+    </div>
+    <div class="service-card">
+      <h3>Custom Web Applications</h3>
+      <p>We develop custom web apps tailored to your business needs — from CRMs to project management tools.</p>
+    </div>
+    <div class="service-card">
+      <h3>Maintenance & Support</h3>
+      <p>Keep your website running smoothly with our ongoing maintenance and technical support services.</p>
+    </div>
+    <div class="service-card">
+      <h3>Cloud Hosting Solutions</h3>
+      <p>Fast, secure, and reliable hosting solutions to ensure your website performs at its best.</p>
+    </div>
+  </section>
+
+  <section class="contact">
+    <h2>Contact Us</h2>
+    <p>📞 01782160996</p>
+    <p>🌐 www.T4Codehouse.com</p>
+    <p>✉️ t4codehouse@gmail.com</p>
+  </section>
+
+  <footer>
+    © 2025 T4 Codehouse. All Rights Reserved.
+  </footer>
+</body>
+</html>
