@@ -1,158 +1,1233 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>T4 Codehouse | Web Development Company</title>
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>T4 Codehouse - Professional Web Development</title>
+  <script src="/_sdk/element_sdk.js"></script>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Poppins', sans-serif;
-    }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    body {
-      background-color: #000;
-      color: #fff;
-      overflow-x: hidden;
-    }
+        body {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
 
-    header {
-      text-align: center;
-      padding: 100px 20px;
-      background: linear-gradient(180deg, #000 0%, #111 100%);
-    }
+        html, body {
+            height: 100%;
+            width: 100%;
+        }
 
-    header h1 {
-      font-size: 2.5rem;
-      font-weight: 700;
-      letter-spacing: 2px;
-    }
+        .main-wrapper {
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
 
-    header h2 {
-      font-size: 1.2rem;
-      margin-top: 10px;
-      color: #ccc;
-    }
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1.2rem 5%;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(16, 185, 129, 0.1);
+        }
 
-    .highlight {
-      color: #4CAF50;
-      font-weight: 700;
-    }
+        .nav-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-    .services {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      padding: 60px 20px;
-      background-color: #0a0a0a;
-    }
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #10b981;
+            text-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+        }
 
-    .service-card {
-      background: #111;
-      border: 1px solid #222;
-      border-radius: 10px;
-      width: 300px;
-      margin: 20px;
-      padding: 30px;
-      text-align: center;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
 
-    .service-card:hover {
-      transform: translateY(-10px);
-      box-shadow: 0 10px 20px rgba(76, 175, 80, 0.3);
-    }
+        .nav-links a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+        }
 
-    .service-card h3 {
-      color: #4CAF50;
-      margin-bottom: 15px;
-    }
+        .nav-links a:hover {
+            color: #10b981;
+        }
 
-    .service-card p {
-      color: #ccc;
-      font-size: 0.95rem;
-      line-height: 1.6;
-    }
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #10b981;
+            transition: width 0.3s ease;
+        }
 
-    .contact {
-      background-color: #000;
-      text-align: center;
-      padding: 60px 20px;
-    }
+        .nav-links a:hover::after {
+            width: 100%;
+        }
 
-    .contact h2 {
-      color: #4CAF50;
-      margin-bottom: 20px;
-    }
+        /* Hero Section */
+        .hero {
+            min-height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 8rem 5% 4rem;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            overflow: hidden;
+        }
 
-    .contact p {
-      color: #ccc;
-      margin: 5px 0;
-    }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(16, 185, 129, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+        }
 
-    footer {
-      background-color: #111;
-      text-align: center;
-      padding: 20px;
-      color: #777;
-      font-size: 0.9rem;
-    }
+        .hero-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(rgba(16, 185, 129, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(16, 185, 129, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            opacity: 0.3;
+        }
 
-    /* 3D Text Effect */
-    .threeD {
-      font-size: 3rem;
-      font-weight: 900;
-      color: #fff;
-      text-shadow: 2px 2px 0 #4CAF50, 4px 4px 0 #333;
-    }
+        .hero-content {
+            max-width: 1400px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
 
-    @media (max-width: 768px) {
-      .service-card {
-        width: 90%;
-      }
-    }
-  </style>
-</head>
-<body>
-  <header>
-    <h1 class="threeD">Build Your Website with <span class="highlight">T4</span> Codehouse</h1>
-    <h2>Professional Web Development & Design Services</h2>
-  </header>
+        .hero-text h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #ffffff 0%, #10b981 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+        }
 
-  <section class="services">
-    <div class="service-card">
-      <h3>Website Design & Development</h3>
-      <p>We create beautiful, user-friendly, and responsive websites optimized for search engines and user experience.</p>
+        .hero-text p {
+            font-size: 1.25rem;
+            color: #b0b0b0;
+            margin-bottom: 2.5rem;
+            line-height: 1.8;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 1rem 3rem;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+            border: none;
+            cursor: pointer;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(16, 185, 129, 0.5);
+        }
+
+        .hero-visual {
+            position: relative;
+            height: 500px;
+        }
+
+        .floating-card {
+            position: absolute;
+            background: rgba(26, 26, 26, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .floating-card:nth-child(1) {
+            top: 10%;
+            left: 10%;
+            width: 250px;
+            animation-delay: 0s;
+        }
+
+        .floating-card:nth-child(2) {
+            top: 50%;
+            right: 10%;
+            width: 280px;
+            animation-delay: 2s;
+        }
+
+        .floating-card:nth-child(3) {
+            bottom: 10%;
+            left: 30%;
+            width: 220px;
+            animation-delay: 4s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .card-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #10b981;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-text {
+            font-size: 0.9rem;
+            color: #888;
+        }
+
+        /* Section Styles */
+        section {
+            padding: 6rem 5%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin-bottom: 3rem;
+            color: #ffffff;
+            position: relative;
+            display: inline-block;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(90deg, #10b981, #059669);
+            border-radius: 2px;
+        }
+
+        /* About Section */
+        .about-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .about-card {
+            background: rgba(26, 26, 26, 0.6);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 15px;
+            padding: 2.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .about-card:hover {
+            transform: translateY(-10px);
+            border-color: rgba(16, 185, 129, 0.5);
+            box-shadow: 0 20px 40px rgba(16, 185, 129, 0.2);
+        }
+
+        .about-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .about-card h3 {
+            font-size: 1.4rem;
+            color: #10b981;
+            margin-bottom: 1rem;
+        }
+
+        .about-card p {
+            color: #b0b0b0;
+            line-height: 1.8;
+        }
+
+        /* Services Section */
+        .services {
+            background: rgba(16, 185, 129, 0.02);
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2.5rem;
+            margin-top: 3rem;
+        }
+
+        .service-card {
+            background: rgba(26, 26, 26, 0.8);
+            border: 1px solid rgba(16, 185, 129, 0.15);
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            text-align: center;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .service-card:hover::before {
+            left: 100%;
+        }
+
+        .service-card:hover {
+            transform: translateY(-15px) scale(1.02);
+            border-color: rgba(16, 185, 129, 0.5);
+            box-shadow: 0 25px 50px rgba(16, 185, 129, 0.3);
+        }
+
+        .service-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            display: inline-block;
+            transition: transform 0.3s ease;
+        }
+
+        .service-card:hover .service-icon {
+            transform: scale(1.1) rotateY(360deg);
+        }
+
+        .service-card h3 {
+            font-size: 1.5rem;
+            color: #ffffff;
+            margin-bottom: 1rem;
+        }
+
+        .service-card p {
+            color: #888;
+            line-height: 1.8;
+        }
+
+        /* Why Choose Section */
+        .why-choose {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1.5rem;
+            padding: 2rem;
+            background: rgba(26, 26, 26, 0.5);
+            border-radius: 15px;
+            border: 1px solid rgba(16, 185, 129, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .feature-item:hover {
+            border-color: rgba(16, 185, 129, 0.4);
+            transform: translateX(10px);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            color: #10b981;
+            flex-shrink: 0;
+        }
+
+        .feature-content h4 {
+            font-size: 1.2rem;
+            color: #ffffff;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-content p {
+            color: #888;
+            font-size: 0.95rem;
+        }
+
+        .progress-bar {
+            margin-top: 1rem;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: #b0b0b0;
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 8px;
+            background: rgba(26, 26, 26, 0.8);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #059669);
+            border-radius: 10px;
+            transition: width 1s ease;
+        }
+
+        /* Contact Section */
+        .contact {
+            background: rgba(16, 185, 129, 0.02);
+        }
+
+        .contact-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            margin-top: 3rem;
+        }
+
+        .contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            background: rgba(26, 26, 26, 0.6);
+            border-radius: 15px;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .contact-item:hover {
+            border-color: rgba(16, 185, 129, 0.5);
+            transform: translateX(10px);
+        }
+
+        .contact-item-icon {
+            font-size: 2rem;
+            color: #10b981;
+        }
+
+        .contact-item-text {
+            flex: 1;
+        }
+
+        .contact-item-text h4 {
+            font-size: 1.1rem;
+            color: #ffffff;
+            margin-bottom: 0.3rem;
+        }
+
+        .contact-item-text p {
+            color: #888;
+            font-size: 0.95rem;
+        }
+
+        .contact-item-text a {
+            color: #10b981;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .contact-item-text a:hover {
+            color: #059669;
+        }
+
+        .contact-form {
+            background: rgba(26, 26, 26, 0.6);
+            padding: 3rem;
+            border-radius: 20px;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #b0b0b0;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(10, 10, 10, 0.8);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 10px;
+            color: #ffffff;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #10b981;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .submit-button {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .submit-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(16, 185, 129, 0.4);
+        }
+
+        .form-message {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+            display: none;
+        }
+
+        .form-message.success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #10b981;
+        }
+
+        .form-message.error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+        }
+
+        /* Footer */
+        footer {
+            background: rgba(10, 10, 10, 0.95);
+            padding: 3rem 5%;
+            border-top: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 3rem;
+        }
+
+        .footer-brand h3 {
+            font-size: 2rem;
+            color: #10b981;
+            margin-bottom: 1rem;
+        }
+
+        .footer-brand p {
+            color: #888;
+            line-height: 1.8;
+        }
+
+        .footer-links h4 {
+            color: #ffffff;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .footer-links ul {
+            list-style: none;
+        }
+
+        .footer-links ul li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-links a {
+            color: #888;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: #10b981;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+            height: 45px;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 50%;
+            color: #10b981;
+            text-decoration: none;
+            font-size: 1.3rem;
+            transition: all 0.3s ease;
+        }
+
+        .social-links a:hover {
+            background: #10b981;
+            color: #ffffff;
+            transform: translateY(-5px);
+        }
+
+        .footer-bottom {
+            max-width: 1400px;
+            margin: 2rem auto 0;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(16, 185, 129, 0.1);
+            text-align: center;
+            color: #666;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 968px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hero-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .hero-text h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero-visual {
+                display: none;
+            }
+
+            .contact-container {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .social-links {
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .hero-text h1 {
+                font-size: 2rem;
+            }
+
+            .hero-text p {
+                font-size: 1rem;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+        }
+    </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body>
+  <div class="main-wrapper"><!-- Navigation -->
+   <nav>
+    <div class="nav-content">
+     <div class="logo">
+      T4 Codehouse
+     </div>
+     <ul class="nav-links">
+      <li><a href="#home">Home</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#services">Services</a></li>
+      <li><a href="#why-choose">Why Us</a></li>
+      <li><a href="#contact">Contact</a></li>
+     </ul>
     </div>
-    <div class="service-card">
+   </nav><!-- Hero Section -->
+   <section id="home" class="hero">
+    <div class="hero-grid"></div>
+    <div class="hero-content">
+     <div class="hero-text">
+      <h1 id="hero-headline">Build Your Website With T4 Codehouse</h1>
+      <p id="hero-subheadline">We build modern, responsive, SEO-optimized, and scalable websites that help your business grow in the digital world.</p><button class="cta-button" id="cta-button" onclick="document.getElementById('contact').scrollIntoView({behavior: 'smooth'})">Get Started</button>
+     </div>
+     <div class="hero-visual">
+      <div class="floating-card">
+       <div class="card-icon">
+        💻
+       </div>
+       <div class="card-title">
+        Modern Design
+       </div>
+       <div class="card-text">
+        Beautiful &amp; Responsive
+       </div>
+      </div>
+      <div class="floating-card">
+       <div class="card-icon">
+        ⚡
+       </div>
+       <div class="card-title">
+        High Performance
+       </div>
+       <div class="card-text">
+        Fast &amp; Optimized
+       </div>
+      </div>
+      <div class="floating-card">
+       <div class="card-icon">
+        🔒
+       </div>
+       <div class="card-title">
+        Secure &amp; Scalable
+       </div>
+       <div class="card-text">
+        Enterprise Ready
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- About Section -->
+   <section id="about">
+    <h2 class="section-title" id="about-title">About T4 Codehouse</h2>
+    <div class="about-content">
+     <div class="about-card">
+      <div class="about-icon">
+       🎯
+      </div>
+      <h3>Client-Focused</h3>
+      <p id="about-description">We put our clients first, understanding their unique needs and delivering tailored solutions that exceed expectations.</p>
+     </div>
+     <div class="about-card">
+      <div class="about-icon">
+       🚀
+      </div>
+      <h3>Modern Technologies</h3>
+      <p>Leveraging the latest web technologies and frameworks to build future-proof, scalable applications.</p>
+     </div>
+     <div class="about-card">
+      <div class="about-icon">
+       🤝
+      </div>
+      <h3>Collaborative Approach</h3>
+      <p>Working closely with you from concept to launch, ensuring transparency and communication every step of the way.</p>
+     </div>
+    </div>
+   </section><!-- Services Section -->
+   <section id="services" class="services">
+    <h2 class="section-title" id="services-title">Our Services</h2>
+    <div class="services-grid">
+     <div class="service-card">
+      <div class="service-icon">
+       🎨
+      </div>
+      <h3>Website Design &amp; Development</h3>
+      <p>Custom-designed websites that are visually stunning, user-friendly, and optimized for conversions.</p>
+     </div>
+     <div class="service-card">
+      <div class="service-icon">
+       🛒
+      </div>
       <h3>E-commerce Development</h3>
-      <p>Build your online store with secure payment processing, product management, and shipping integration.</p>
-    </div>
-    <div class="service-card">
+      <p>Powerful online stores with secure payment integration and inventory management systems.</p>
+     </div>
+     <div class="service-card">
+      <div class="service-icon">
+       ⚙️
+      </div>
       <h3>Custom Web Applications</h3>
-      <p>We develop custom web apps tailored to your business needs — from CRMs to project management tools.</p>
+      <p>Tailored web applications built to solve your specific business challenges and workflows.</p>
+     </div>
+     <div class="service-card">
+      <div class="service-icon">
+       🔧
+      </div>
+      <h3>Maintenance &amp; Support</h3>
+      <p>Ongoing support and maintenance to keep your website running smoothly and securely.</p>
+     </div>
+     <div class="service-card">
+      <div class="service-icon">
+       ☁️
+      </div>
+      <h3>Cloud Computing &amp; Hosting</h3>
+      <p>Reliable cloud infrastructure and hosting solutions for optimal performance and uptime.</p>
+     </div>
+     <div class="service-card">
+      <div class="service-icon">
+       📱
+      </div>
+      <h3>Responsive Design</h3>
+      <p>Mobile-first designs that look perfect on all devices, from smartphones to desktops.</p>
+     </div>
     </div>
-    <div class="service-card">
-      <h3>Maintenance & Support</h3>
-      <p>Keep your website running smoothly with our ongoing maintenance and technical support services.</p>
+   </section><!-- Why Choose Section -->
+   <section id="why-choose" class="why-choose">
+    <h2 class="section-title" id="why-choose-title">Why Choose T4 Codehouse</h2>
+    <div class="features-grid">
+     <div class="feature-item">
+      <div class="feature-icon">
+       ✨
+      </div>
+      <div class="feature-content">
+       <h4>Modern Technologies</h4>
+       <p>Using cutting-edge tools and frameworks</p>
+       <div class="progress-bar">
+        <div class="progress-label"><span>Expertise</span> <span>95%</span>
+        </div>
+        <div class="progress-track">
+         <div class="progress-fill" style="width: 95%"></div>
+        </div>
+       </div>
+      </div>
+     </div>
+     <div class="feature-item">
+      <div class="feature-icon">
+       🔍
+      </div>
+      <div class="feature-content">
+       <h4>SEO-Optimized</h4>
+       <p>Built for search engine visibility</p>
+       <div class="progress-bar">
+        <div class="progress-label"><span>Optimization</span> <span>92%</span>
+        </div>
+        <div class="progress-track">
+         <div class="progress-fill" style="width: 92%"></div>
+        </div>
+       </div>
+      </div>
+     </div>
+     <div class="feature-item">
+      <div class="feature-icon">
+       📱
+      </div>
+      <div class="feature-content">
+       <h4>Mobile-First Design</h4>
+       <p>Responsive across all devices</p>
+       <div class="progress-bar">
+        <div class="progress-label"><span>Responsiveness</span> <span>98%</span>
+        </div>
+        <div class="progress-track">
+         <div class="progress-fill" style="width: 98%"></div>
+        </div>
+       </div>
+      </div>
+     </div>
+     <div class="feature-item">
+      <div class="feature-icon">
+       🔒
+      </div>
+      <div class="feature-content">
+       <h4>Secure &amp; Scalable</h4>
+       <p>Enterprise-grade security standards</p>
+       <div class="progress-bar">
+        <div class="progress-label"><span>Security</span> <span>96%</span>
+        </div>
+        <div class="progress-track">
+         <div class="progress-fill" style="width: 96%"></div>
+        </div>
+       </div>
+      </div>
+     </div>
+     <div class="feature-item">
+      <div class="feature-icon">
+       💬
+      </div>
+      <div class="feature-content">
+       <h4>Professional Support</h4>
+       <p>Dedicated support team available 24/7</p>
+       <div class="progress-bar">
+        <div class="progress-label"><span>Support Quality</span> <span>99%</span>
+        </div>
+        <div class="progress-track">
+         <div class="progress-fill" style="width: 99%"></div>
+        </div>
+       </div>
+      </div>
+     </div>
+     <div class="feature-item">
+      <div class="feature-icon">
+       ⚡
+      </div>
+      <div class="feature-content">
+       <h4>Fast Performance</h4>
+       <p>Optimized for lightning-fast loading</p>
+       <div class="progress-bar">
+        <div class="progress-label"><span>Speed</span> <span>94%</span>
+        </div>
+        <div class="progress-track">
+         <div class="progress-fill" style="width: 94%"></div>
+        </div>
+       </div>
+      </div>
+     </div>
     </div>
-    <div class="service-card">
-      <h3>Cloud Hosting Solutions</h3>
-      <p>Fast, secure, and reliable hosting solutions to ensure your website performs at its best.</p>
+   </section><!-- Contact Section -->
+   <section id="contact" class="contact">
+    <h2 class="section-title" id="contact-title">Get In Touch</h2>
+    <div class="contact-container">
+     <div class="contact-info">
+      <div class="contact-item">
+       <div class="contact-item-icon">
+        📞
+       </div>
+       <div class="contact-item-text">
+        <h4>Phone</h4>
+        <p><a href="tel:01737160996">01737160996</a></p>
+       </div>
+      </div>
+      <div class="contact-item">
+       <div class="contact-item-icon">
+        ✉️
+       </div>
+       <div class="contact-item-text">
+        <h4>Email</h4>
+        <p><a href="mailto:t4codehouse@gmail.com">t4codehouse@gmail.com</a></p>
+       </div>
+      </div>
+      <div class="contact-item">
+       <div class="contact-item-icon">
+        🌐
+       </div>
+       <div class="contact-item-text">
+        <h4>Website</h4>
+        <p><a href="https://www.t4codehouse.com" target="_blank" rel="noopener noreferrer">www.t4codehouse.com</a></p>
+       </div>
+      </div>
+     </div>
+     <form class="contact-form" id="contact-form">
+      <div class="form-group"><label for="name">Your Name</label> <input type="text" id="name" name="name" required>
+      </div>
+      <div class="form-group"><label for="email">Your Email</label> <input type="email" id="email" name="email" required>
+      </div>
+      <div class="form-group"><label for="message">Your Message</label> <textarea id="message" name="message" required></textarea>
+      </div><button type="submit" class="submit-button">Send Message</button>
+      <div class="form-message" id="form-message"></div>
+     </form>
     </div>
-  </section>
+   </section><!-- Footer -->
+   <footer>
+    <div class="footer-content">
+     <div class="footer-brand">
+      <h3>T4 Codehouse</h3>
+      <p id="footer-tagline">Building Digital Excellence - Your trusted partner for professional web development services.</p>
+      <div class="social-links"><a href="#" aria-label="Facebook">📘</a> <a href="#" aria-label="Twitter">🐦</a> <a href="#" aria-label="LinkedIn">💼</a> <a href="#" aria-label="Instagram">📷</a>
+      </div>
+     </div>
+     <div class="footer-links">
+      <h4>Quick Links</h4>
+      <ul>
+       <li><a href="#home">Home</a></li>
+       <li><a href="#about">About</a></li>
+       <li><a href="#services">Services</a></li>
+       <li><a href="#contact">Contact</a></li>
+      </ul>
+     </div>
+     <div class="footer-links">
+      <h4>Services</h4>
+      <ul>
+       <li><a href="#services">Web Design</a></li>
+       <li><a href="#services">E-commerce</a></li>
+       <li><a href="#services">Web Apps</a></li>
+       <li><a href="#services">Support</a></li>
+      </ul>
+     </div>
+    </div>
+    <div class="footer-bottom">
+     <p>© 2024 T4 Codehouse. All rights reserved.</p>
+    </div>
+   </footer>
+  </div>
+  <script>
+        const defaultConfig = {
+            background_color: '#0a0a0a',
+            accent_color: '#10b981',
+            surface_color: '#1a1a1a',
+            text_color: '#ffffff',
+            secondary_text_color: '#b0b0b0',
+            font_family: 'Segoe UI',
+            font_size: 16,
+            hero_headline: 'Build Your Website With T4 Codehouse',
+            hero_subheadline: 'We build modern, responsive, SEO-optimized, and scalable websites that help your business grow in the digital world.',
+            hero_cta_button: 'Get Started',
+            about_title: 'About T4 Codehouse',
+            about_description: 'We put our clients first, understanding their unique needs and delivering tailored solutions that exceed expectations.',
+            services_title: 'Our Services',
+            why_choose_title: 'Why Choose T4 Codehouse',
+            contact_title: 'Get In Touch',
+            footer_tagline: 'Building Digital Excellence - Your trusted partner for professional web development services.'
+        };
 
-  <section class="contact">
-    <h2>Contact Us</h2>
-    <p>📞 01782160996</p>
-    <p>🌐 www.T4Codehouse.com</p>
-    <p>✉️ t4codehouse@gmail.com</p>
-  </section>
+        async function onConfigChange(config) {
+            const customFont = config.font_family || defaultConfig.font_family;
+            const baseSize = config.font_size || defaultConfig.font_size;
+            const baseFontStack = 'Tahoma, Geneva, Verdana, sans-serif';
 
-  <footer>
-    © 2025 T4 Codehouse. All Rights Reserved.
-  </footer>
-</body>
-</html>
+            // Apply colors
+            document.body.style.background = config.background_color || defaultConfig.background_color;
+            document.body.style.color = config.text_color || defaultConfig.text_color;
+
+            const allSections = document.querySelectorAll('section');
+            allSections.forEach(section => {
+                if (section.classList.contains('services') || section.classList.contains('contact')) {
+                    const accentColor = config.accent_color || defaultConfig.accent_color;
+                    section.style.background = `rgba(${parseInt(accentColor.slice(1, 3), 16)}, ${parseInt(accentColor.slice(3, 5), 16)}, ${parseInt(accentColor.slice(5, 7), 16)}, 0.02)`;
+                }
+            });
+
+            // Apply accent color to various elements
+            const accentElements = document.querySelectorAll('.logo, .nav-links a:hover, .section-title::after, .about-card h3, .feature-icon, .contact-item-icon, .contact-item-text a, .footer-brand h3');
+            accentElements.forEach(el => {
+                el.style.color = config.accent_color || defaultConfig.accent_color;
+            });
+
+            // Apply fonts
+            document.body.style.fontFamily = `${customFont}, ${baseFontStack}`;
+
+            // Scale font sizes
+            const heroHeadline = document.getElementById('hero-headline');
+            if (heroHeadline) heroHeadline.style.fontSize = `${baseSize * 2.2}px`;
+
+            const heroSubheadline = document.getElementById('hero-subheadline');
+            if (heroSubheadline) heroSubheadline.style.fontSize = `${baseSize * 1.1}px`;
+
+            const sectionTitles = document.querySelectorAll('.section-title');
+            sectionTitles.forEach(title => title.style.fontSize = `${baseSize * 1.75}px`);
+
+            const cardTitles = document.querySelectorAll('.about-card h3, .service-card h3');
+            cardTitles.forEach(title => title.style.fontSize = `${baseSize * 1.2}px`);
+
+            // Update text content
+            if (heroHeadline) heroHeadline.textContent = config.hero_headline || defaultConfig.hero_headline;
+            if (heroSubheadline) heroSubheadline.textContent = config.hero_subheadline || defaultConfig.hero_subheadline;
+
+            const ctaButton = document.getElementById('cta-button');
+            if (ctaButton) ctaButton.textContent = config.hero_cta_button || defaultConfig.hero_cta_button;
+
+            const aboutTitle = document.getElementById('about-title');
+            if (aboutTitle) aboutTitle.textContent = config.about_title || defaultConfig.about_title;
+
+            const aboutDescription = document.getElementById('about-description');
+            if (aboutDescription) aboutDescription.textContent = config.about_description || defaultConfig.about_description;
+
+            const servicesTitle = document.getElementById('services-title');
+            if (servicesTitle) servicesTitle.textContent = config.services_title || defaultConfig.services_title;
+
+            const whyChooseTitle = document.getElementById('why-choose-title');
+            if (whyChooseTitle) whyChooseTitle.textContent = config.why_choose_title || defaultConfig.why_choose_title;
+
+            const contactTitle = document.getElementById('contact-title');
+            if (contactTitle) contactTitle.textContent = config.contact_title || defaultConfig.contact_title;
+
+            const footerTagline = document.getElementById('footer-tagline');
+            if (footerTagline) footerTagline.textContent = config.footer_tagline || defaultConfig.footer_tagline;
+        }
+
+        function mapToCapabilities(config) {
+            return {
+                recolorables: [
+                    {
+                        get: () => config.background_color || defaultConfig.background_color,
+                        set: (value) => {
+                            config.background_color = value;
+                            if (window.elementSdk) window.elementSdk.setConfig({ background_color: value });
+                        }
+                    },
+                    {
+                        get: () => config.surface_color || defaultConfig.surface_color,
+                        set: (value) => {
+                            config.surface_color = value;
+                            if (window.elementSdk) window.elementSdk.setConfig({ surface_color: value });
+                        }
+                    },
+                    {
+                        get: () => config.text_color || defaultConfig.text_color,
+                        set: (value) => {
+                            config.text_color = value;
+                            if (window.elementSdk) window.elementSdk.setConfig({ text_color: value });
+                        }
+                    },
+                    {
+                        get: () => config.accent_color || defaultConfig.accent_color,
+                        set: (value) => {
+                            config.accent_color = value;
+                            if (window.elementSdk) window.elementSdk.setConfig({ accent_color: value });
+                        }
+                    },
+                    {
+                        get: () => config.secondary_text_color || defaultConfig.secondary_text_color,
+                        set: (value) => {
+                            config.secondary_text_color = value;
+                            if (window.elementSdk) window.elementSdk.setConfig({ secondary_text_color: value });
+                        }
+                    }
+                ],
+                borderables: [],
+                fontEditable: {
+                    get: () => config.font_family || defaultConfig.font_family,
+                    set: (value) => {
+                        config.font_family = value;
+                        if (window.elementSdk) window.elementSdk.setConfig({ font_family: value });
+                    }
+                },
+                fontSizeable: {
+                    get: () => config.font_size || defaultConfig.font_size,
+                    set: (value) => {
+                        config.font_size = value;
+                        if (window.elementSdk) window.elementSdk.setConfig({ font_size: value });
+                    }
+                }
+            };
+        }
+
+        function mapToEditPanelValues(config) {
+            return new Map([
+                ['hero_headline', config.hero_headline || defaultConfig.hero_headline],
+                ['hero_subheadline', config.hero_subheadline || defaultConfig.hero_subheadline],
+                ['hero_cta_button', config.hero_cta_button || defaultConfig.hero_cta_button],
+                ['about_title', config.about_title || defaultConfig.about_title],
+                ['about_description', config.about_description || defaultConfig.about_description],
+                ['services_title', config.services_title || defaultConfig.services_title],
+                ['why_choose_title', config.why_choose_title || defaultConfig.why_choose_title],
+                ['contact_title', config.contact_title || defaultConfig.contact_title],
+                ['footer_tagline', config.footer_tagline || defaultConfig.footer_tagline]
+            ]);
+        }
+
+        // Contact form handling
+        document.getElementById('contact-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formMessage = document.getElementById('form-message');
+            const submitButton = this.querySelector('.submit-button');
+            
+            submitButton.disabled = true;
+            submitButton.textContent = 'Sending...';
+            
+            // Simulate form submission
+            setTimeout(() => {
+                formMessage.className = 'form-message success';
+                formMessage.textContent = 'Thank you! Your message has been sent successfully. We\'ll get back to you soon.';
+                formMessage.style.display = 'block';
+                
+                submitButton.disabled = false;
+                submitButton.textContent = 'Send Message';
+                
+                this.reset();
+                
+                setTimeout(() => {
+                    formMessage.style.display = 'none';
+                }, 5000);
+            }, 1500);
+        });
+
+        // Initialize SDK
+        if (window.elementSdk) {
+            window.elementSdk.init({
+                defaultConfig,
+                onConfigChange,
+                mapToCapabilities,
+                mapToEditPanelValues
+            });
+        }
+    </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9b31e384b29c4ea6',t:'MTc2NjU5ODA3OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+    </html>
